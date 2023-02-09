@@ -14,7 +14,7 @@ import requests
 import torch.distributed as dist
 import torchvision.utils
 
-from imaginaire.utils.distributed import is_master
+#from imaginaire.utils.distributed import is_master
 
 
 
