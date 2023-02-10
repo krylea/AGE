@@ -35,7 +35,7 @@ def list_files(root: str, suffix = None, prefix: bool = False):
 parser = argparse.ArgumentParser()
 parser.add_argument('root_dir')
 parser.add_argument('target_dir')
-parser.add_argument('splits', type=str, nargs='+', default=['train', 'val', 'test'])
+parser.add_argument('--splits', type=str, nargs='+', default=['train', 'val', 'test'])
 
 args = parser.parse_args()
 
