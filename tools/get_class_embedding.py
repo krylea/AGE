@@ -19,29 +19,6 @@ from utils.common import tensor2im, log_input_image
 from options.test_options import TestOptions
 from models.age import AGE
 
-
-def get_n_distribution(net, transform, class_embeddings, opts):
-    samples=os.listdir(opts.train_data_path)
-    xs=[]
-    for s in tqdm(samples):
-        cate=s.split('_')[0]
-        av_codes=class_embeddings[cate].cuda()
-        from_im = Image.open(os.path.join(opts.train_data_path,s))
-        from_im = from_im.convert('RGB')
-        from_im = transform(from_im)
-        with torch.no_grad():
-            x=net.get_code(from_im.unsqueeze(0).to("cuda").float(), av_codes.unsqueeze(0))['x']
-            x=torch.stack(x)
-            xs.append(x)
-    codes=torch.stack(xs).squeeze(2).squeeze(2).permute(1,0,2).cpu().numpy()
-    mean=np.mean(codes,axis=1)
-    mean_abs=np.mean(np.abs(codes),axis=1)
-    cov=[]
-    for i in range(codes.shape[0]):
-        cov.append(np.cov(codes[i].T))
-    os.makedirs(opts.n_distribution_path, exist_ok=True)
-    np.save(os.path.join(opts.n_distribution_path, 'n_distribution.npy'),{'mean':mean, 'mean_abs':mean_abs, 'cov':cov})
-
 def run():
     test_opts = TestOptions().parse()
     ckpt = torch.load(test_opts.psp_checkpoint_path, map_location='cpu')
@@ -93,8 +70,6 @@ def run():
     for cate in codes.keys():
         means[cate]=codes[cate]/counts[cate]
     torch.save(means, os.path.join(class_embedding_path, 'class_embeddings.pt'))
-    
-    get_n_distribution(net, transform, means, opts)
 
 if __name__ == '__main__':
     run()
