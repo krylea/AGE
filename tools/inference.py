@@ -87,10 +87,9 @@ if __name__=='__main__':
 
 
     # get n distribution (only needs to be executed once)
-    # class_embeddings=torch.load(os.path.join(test_opts.class_embedding_path, 'class_embeddings.pt'))
-    # get_n_distribution(net, transform, class_embeddings, test_opts)
-
-
+    if not os.path.exists(os.path.join(opts.n_distribution_path, 'n_distribution.npy')):
+        class_embeddings=torch.load(os.path.join(test_opts.class_embedding_path, 'class_embeddings.pt'))
+        get_n_distribution(net, transform, class_embeddings, test_opts)
 
     # generate data
     dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
