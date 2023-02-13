@@ -9,6 +9,8 @@
 #SBATCH --mem=50GB
 #SBATCH --exclude=gpu109
 
+export PYTHONPATH="$PYTHONPATH:./"
+
 psp_checkpoint_path=$1
 age_checkpoint_path=$2
 run_name=$3
