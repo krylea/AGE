@@ -12,7 +12,7 @@
 export PYTHONPATH="$PYTHONPATH:./"
 
 dataset=$1
-run_name="${dataset}_pretrained"
+run_name="${dataset}-pretrained"
 
 pretrained_model_dir="pretrained_models"
 
