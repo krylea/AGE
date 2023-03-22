@@ -3,6 +3,13 @@ from configs.paths_config import dataset_paths
 
 
 DATASETS = {
+    'animalfaces_encode': {
+		'transforms': transforms_config.EncodeTransforms,
+		'train_source_root': dataset_paths['animalfaces-train'],
+		'train_target_root': dataset_paths['animalfaces-train'],
+		'test_source_root': dataset_paths['animalfaces-test'],
+		'test_target_root': dataset_paths['animalfaces-test'],
+	},
 	'af_encode': {
 		'transforms': transforms_config.EncodeTransforms,
 		'train_source_root': dataset_paths['af_train'],
