@@ -11,21 +11,24 @@
 
 export PYTHONPATH="$PYTHONPATH:./"
 
-psp_checkpoint_path=$1
-age_checkpoint_path=$2
-run_name=$3
-dataset=$4
+dataset=$1
+run_name="$dataset_pretrained"
 
-class_embedding_path="class_embeds/${run_name}"
-n_distribution_path="n_distribution/${run_name}"
+pretrained_model_dir="pretrained_models"
 
-dataset_path="../setgan2/datasets/"
+psp_checkpoint_path="$pretrained_model_dir/psp_$dataset.pt"
+age_checkpoint_path="$pretrained_model_dir/age_$dataset.pt"
+
+class_embedding_path="class_embeds/$run_name"
+n_distribution_path="n_distribution/$run_name"
+
+dataset_path="../setgan2/datasets/$dataset"
 
 python tools/get_scores.py \
 --output_path=outputs/$run_name \
 --checkpoint_path=pretrained_models/$age_checkpoint_path \
---test_data_path=data/$dataset/test \
---train_data_path=data/$dataset/train \
+--test_data_path=$dataset_path/test \
+--train_data_path=data/$dataset_path/train \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --test_batch_size=4 \
