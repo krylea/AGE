@@ -29,7 +29,7 @@ python3 tools/get_scores.py \
 --checkpoint_path=$age_checkpoint_path \
 --test_data_path=$dataset_path/test \
 --train_data_path=data/$dataset_path/train \
---dataset_type="${dataset}_encode"
+--dataset_type="${dataset}_encode" \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --test_batch_size=4 \
