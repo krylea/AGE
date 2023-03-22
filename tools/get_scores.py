@@ -175,7 +175,7 @@ def get_class_generations(net, dataset, num_source_images, num_generations):
         source_image = random.choice(source_images)
         generated_images.append(_generate_image(source_image))
     
-    return torch.stack(generated_images, dim=0)
+    return torch.cat(generated_images, dim=0)
     
 
 def evaluate_scores(datasets, generator, candidate_size, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
