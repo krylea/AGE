@@ -25,7 +25,7 @@ n_distribution_path="n_distribution/$run_name"
 dataset_path="../setgan2/datasets/$dataset"
 
 python tools/get_scores.py \
---output_path=outputs/$run_name \
+--output_path=eval \
 --checkpoint_path=pretrained_models/$age_checkpoint_path \
 --test_data_path=$dataset_path/test \
 --train_data_path=data/$dataset_path/train \
