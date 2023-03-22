@@ -31,7 +31,6 @@ from PIL import Image
 from torch.utils.data import Dataset, ConcatDataset, Subset, IterableDataset, random_split
 import torch
 
-from src.setgan.utils import split_dataset
 
 
 import torchvision
