@@ -26,7 +26,7 @@ dataset_path="../setgan2/datasets/$dataset"
 
 python tools/get_scores.py \
 --output_path=eval \
---checkpoint_path=pretrained_models/$age_checkpoint_path \
+--checkpoint_path=$age_checkpoint_path \
 --test_data_path=$dataset_path/test \
 --train_data_path=data/$dataset_path/train \
 --class_embedding_path=$class_embedding_path \
