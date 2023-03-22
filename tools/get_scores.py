@@ -192,8 +192,8 @@ def evaluate_scores(datasets, generator, candidate_size, metrics=('fid', 'lpips'
     #scores = torch.zeros(num_classes)
 
     for i, class_id in enumerate(class_ids):
-        dataset_i = Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
         num_images_i = min(num_images, len(datasets[class_id])) if num_images > 0 else len(datasets[class_id])
+        dataset_i = Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
         generated_images = get_class_generations(generator, dataset_i, candidate_size, num_images_i)
 
         for metric in metrics:
