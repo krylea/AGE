@@ -10,6 +10,7 @@
 #SBATCH --exclude=gpu109
 
 export PYTHONPATH="$PYTHONPATH:./"
+export CUDA_HOME="/pkgs/cuda-11.7/"
 
 dataset=$1
 run_name="${dataset}-pretrained"
