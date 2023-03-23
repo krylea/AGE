@@ -218,6 +218,7 @@ if __name__=='__main__':
         opts['learn_in_w'] = False
     if 'output_size' not in opts:
         opts['output_size'] = 1024
+    opts['output_size'] = 256
     opts = Namespace(**opts)
     net = AGE(opts)
     net.eval()

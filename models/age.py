@@ -127,7 +127,7 @@ class AGE(nn.Module):
 				new_state_dict[name] = v
 			ckpt['state_dict'] = new_state_dict
 			self.encoder.load_state_dict(get_keys(ckpt, 'encoder'), strict=True)
-			self.decoder.load_state_dict(get_keys(ckpt, 'decoder'), strict=True)
+			self.decoder.load_state_dict(get_keys(ckpt, 'decoder'), strict=False)
 			self.__load_latent_avg(ckpt)
 
 	def forward(self, x, av_codes, resize=True, latent_mask=None, input_code=False, randomize_noise=True,
