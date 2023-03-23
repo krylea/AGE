@@ -96,7 +96,7 @@ if __name__=='__main__':
     test_data_path=test_opts.test_data_path
     output_path=test_opts.output_path
     os.makedirs(output_path, exist_ok=True)
-    from_ims = os.listdir(test_data_path)
+    from_ims = os.listdir(test_data_path)[:10]
     for from_im_name in from_ims:
         for j in tqdm(range(test_opts.n_images)):
             from_im = Image.open(os.path.join(test_data_path, from_im_name))

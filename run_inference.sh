@@ -11,10 +11,10 @@
 
 export PYTHONPATH="$PYTHONPATH:./"
 
-psp_checkpoint_path=$1
-age_checkpoint_path=$2
-run_name=$3
-dataset=$4
+#psp_checkpoint_path=$1
+age_checkpoint_path=$1
+run_name=$2
+dataset=$3
 
 class_embedding_path="class_embeds/${run_name}"
 n_distribution_path="n_distribution/${run_name}"
@@ -22,8 +22,8 @@ n_distribution_path="n_distribution/${run_name}"
 python tools/inference.py \
 --output_path=outputs/$run_name \
 --checkpoint_path=pretrained_models/$age_checkpoint_path \
---test_data_path=data/$dataset/test \
---train_data_path=data/$dataset/train \
+--test_data_path=../setgan2/datasets/$dataset/test \
+--train_data_path=../setgan2/datasets/$dataset/train \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --test_batch_size=4 \
