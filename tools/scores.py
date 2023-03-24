@@ -48,6 +48,18 @@ import lpips
 
 import math
 
+from torchmetrics.image.fid import FrechetInceptionDistance
+
+class FIDMetric2():
+    def __init__(self, normalize=True, dims=2048):
+        self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
+
+    def forward(self, real_inputs, fake_inputs):
+        self.fid.reset()
+        self.fid.update(real_inputs, real=True)
+        self.fid.update(fake_inputs, real=False)
+        return self.fid.compute()
+
 
 class FIDMetric():
     def __init__(self, dims=2048, device=torch.device("cuda"), metrics_path=None, eps=1e-6):
@@ -233,7 +245,7 @@ class LPIPSMetric():
 
 
 METRICS = {
-    'fid': FIDMetric,
+    'fid': FIDMetric2,
     'lpips': LPIPSMetric
 }
 

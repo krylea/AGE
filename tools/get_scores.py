@@ -193,7 +193,7 @@ def evaluate_scores(datasets, generator, candidate_size, metrics=('fid', 'lpips'
 
     for i, class_id in enumerate(class_ids):
         num_images_i = min(num_images, len(datasets[class_id])) if num_images > 0 else len(datasets[class_id])
-        dataset_i = Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
+        dataset_i = datasets[class_id]#Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
         generated_images = get_class_generations(generator, dataset_i, candidate_size, num_images_i)
 
         for metric in metrics:
@@ -247,7 +247,7 @@ if __name__=='__main__':
     time = datetime.datetime.now()
     outfile = os.path.join(test_opts.output_path, "%d_%d_%d_.txt" % (time.month, time.day, time.hour))
 
-    test_scores = evaluate_scores(test_datasets, net, 10, num_images=100, num_classes=-1)
+    test_scores = evaluate_scores(test_datasets, net, 10, num_images=128, num_classes=-1)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")
@@ -256,7 +256,7 @@ if __name__=='__main__':
 
     train_scores = evaluate_scores(train_datasets, net, 10, num_images=100, num_classes=-1)
 
-    with open(outfile, 'w') as writer:
+    with open(outfile, 'a') as writer:
         writer.write("Train:\n")
         for metric, metric_scores in train_scores.items():
             writer.write('%s:\t%f\n' % (metric, metric_scores.mean().item()))
