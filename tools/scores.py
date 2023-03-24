@@ -54,7 +54,7 @@ class FIDMetric2():
     def __init__(self, normalize=True, dims=2048):
         self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
 
-    def forward(self, real_inputs, fake_inputs):
+    def forward(self, fake_inputs, real_inputs):
         self.fid.reset()
         self.fid.update(real_inputs, real=True)
         self.fid.update(fake_inputs, real=False)
@@ -287,7 +287,7 @@ def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=
         generated_images = get_class_generations(dataset, generator, class_id, num_images_i, reference_size, candidate_size, device,
             data_kwargs=data_kwargs, generator_kwargs=generator_kwargs, data_rng=data_rng, noise_rng=noise_rng)
 
-        dataset_i = Subset(dataset.datasets[class_id], range(num_images)) if num_images_i < len(dataset.datasets[class_id]) else dataset.datasets[class_id]
+        dataset_i = dataset.datasets[class_id]#Subset(dataset.datasets[class_id], range(num_images)) if num_images_i < len(dataset.datasets[class_id]) else dataset.datasets[class_id]
         for metric in metrics:
             scores[metric][i] = metric_fcts[metric](generated_images, dataset_i)
 
