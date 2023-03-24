@@ -23,7 +23,7 @@ age_checkpoint_path="${pretrained_model_dir}/age_${dataset}.pt"
 class_embedding_path="class_embeds/${run_name}"
 n_distribution_path="n_distribution/${run_name}"
 
-dataset_path="../setgan2/datasets/${dataset}"
+dataset_path="../setgan2/datasets/animal_faces"
 
 python3 tools/get_scores.py \
 --output_path=eval \

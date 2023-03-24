@@ -201,7 +201,11 @@ def evaluate_scores(datasets, generator, candidate_size, metrics=('fid', 'lpips'
 
     return scores
 
-
+from einops import rearrange
+def save_images(images, path):
+    images_out = rearrange(images, 'b n c y x -> c (n y) (b x)')
+    images_out = tensor2im(images_out)
+    Image.fromarray(np.array(images_out)).save(path)
 
 
 if __name__=='__main__':
