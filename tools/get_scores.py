@@ -260,7 +260,7 @@ if __name__=='__main__':
 
 
     dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
-    sampler = Sampler(dist, test_opts)
+    sampler = Sampler(dist, opts)
 
 
     train_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['train_source_root'], opts=opts, transforms=transform)

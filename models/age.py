@@ -2,7 +2,7 @@
 This file defines the core research contribution
 """
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import math
 
 import torch
@@ -111,7 +111,7 @@ class AGE(nn.Module):
 			ckpt['state_dict'] = new_state_dict
 			self.ax.load_state_dict(get_keys(ckpt, 'ax'), strict=True)
 			self.encoder.load_state_dict(get_keys(ckpt, 'encoder'), strict=True)
-			self.decoder.load_state_dict(get_keys(ckpt, 'decoder'), strict=True)
+			self.decoder.load_state_dict(get_keys(ckpt, 'decoder'), strict=False)
 			self.__load_latent_avg(ckpt)
 		else:
 			if dist.is_initialized():

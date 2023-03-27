@@ -257,7 +257,7 @@ def fid_transform(images):
     var = ((images + 1) / 2)
     var[var < 0] = 0
     var[var > 1] = 1
-    return images
+    return var
 
 def lpips_transform(images):
     var = images.clone()
