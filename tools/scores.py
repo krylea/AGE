@@ -33,7 +33,7 @@ from PIL import Image
 from scipy import linalg
 from torch.nn.functional import adaptive_avg_pool2d
 
-from torch.utils.data import TensorDataset, Subset
+from torch.utils.data import Dataset, IterableDataset, TensorDataset, Subset
 
 try:
     from tqdm import tqdm
@@ -50,11 +50,20 @@ import math
 
 from torchmetrics.image.fid import FrechetInceptionDistance
 
+def dataset_to_tensor(dataset):
+    if isinstance(dataset, IterableDataset):
+        tensors = [x for x in dataset]
+    else:
+        tensors = [dataset[i] for i in range(len(dataset))]
+    return torch.stack(tensors, dim=0)
+
 class FIDMetric2():
     def __init__(self, normalize=True, dims=2048, device=torch.device("cuda")):
         self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
 
     def __call__(self, fake_inputs, real_inputs):
+        if isinstance(real_inputs, Dataset):
+            real_inputs = dataset_to_tensor(real_inputs)
         self.fid.reset()
         self.fid.update(real_inputs, real=True)
         self.fid.update(fake_inputs, real=False)
