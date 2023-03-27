@@ -17,7 +17,7 @@ from utils.common import tensor2im
 from options.test_options import TestOptions
 from models.age import AGE
 
-from tools.scores import METRICS, TRANSFORMS, dataset_to_tensor
+from tools.scores import METRICS, TRANSFORMS, dataset_to_tensor, FIDMetric, fid_transform
 
 #
 #   Dataset stuff
@@ -191,7 +191,7 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
     return torch.cat(generated_images, dim=0)
     
 
-def evaluate_scores(datasets, generator, reference_size, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
+def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
         num_classes=-1, image_size=-1):
     if class_ids is None:
         num_classes = num_classes if num_classes > 0 else len(datasets)
@@ -217,9 +217,44 @@ def evaluate_scores(datasets, generator, reference_size, sampler, metrics=('fid'
 
         for metric in metrics:
             transforms = TRANSFORMS[metric]
-            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i))
+            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i)).mean().item()
 
     return scores
+
+def evaluate_fid_all(datasets, generator, reference_size, sampler, device=torch.device("cuda"), num_images=-1, 
+         image_size=-1):
+    fid = FIDMetric()   
+
+    generated_images = []
+    dataset = []
+    for i in range(len(datasets)):
+        dataset_i = datasets[i]
+        generated_images_i = get_class_generations(generator, dataset_i, reference_size, num_images, sampler)
+        dataset_i = dataset_to_tensor(dataset_i)
+
+        if image_size > 0:
+            transform = TF.Resize(image_size)
+            generated_images_i = transform(generated_images_i)
+            dataset_i = transform(dataset_i)
+        
+        generated_images.append(fid_transform(generated_images_i))
+        dataset.append(fid_transform(dataset_i))
+    
+    generated_images = torch.cat(generated_images, dim=0)
+    dataset = torch.stack(dataset, dim=0)
+
+    return fid(generated_images, dataset)
+
+def evaluate_scores_all(datasets, generator, reference_size, sampler, device=torch.device("cuda"), num_images=-1, 
+         image_size=-1):
+    
+    lpips_scores = evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('lpips'), 
+                                            num_images=num_images, num_classes=-1, image_size=image_size)['lpips'].mean().item()
+    
+    fid_scores = evaluate_fid_all(datasets, generator, reference_size, sampler, num_images=num_images, image_size=image_size)
+
+    return {'lpips': lpips_scores, 'fid': fid_scores}
+
 
 
 from einops import rearrange
@@ -270,19 +305,21 @@ if __name__=='__main__':
     time = datetime.datetime.now()
     outfile = os.path.join(test_opts.output_path, "%d_%d_%d_.txt" % (time.month, time.day, time.hour))
 
-    test_scores = evaluate_scores(test_datasets, net, 10, sampler, num_images=128, num_classes=-1)
+    evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_fid_all
+
+    test_scores = evaluate_scores(test_datasets, net, 1, sampler, num_images=128)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")
         for metric, metric_scores in test_scores.items():
-            writer.write('%s:\t%f\n' % (metric, metric_scores.mean().item()))
+            writer.write('%s:\t%f\n' % (metric, metric_scores))
 
-    train_scores = evaluate_scores(train_datasets, net, 10, sampler, num_images=128, num_classes=-1)
+    train_scores = evaluate_scores(train_datasets, net, 1, sampler, num_images=128)
 
     with open(outfile, 'a') as writer:
         writer.write("Train:\n")
         for metric, metric_scores in train_scores.items():
-            writer.write('%s:\t%f\n' % (metric, metric_scores.mean().item()))
+            writer.write('%s:\t%f\n' % (metric, metric_scores))
 
 
 
