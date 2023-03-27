@@ -193,20 +193,15 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
 
 def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
         num_classes=-1, image_size=-1):
-    if class_ids is None:
-        num_classes = num_classes if num_classes > 0 else len(datasets)
-        class_ids = torch.randperm(len(datasets))[:num_classes]
-    else:
-        num_classes = len(class_ids)
 
     metric_fcts = {metric: METRICS[metric](device=device) for metric in metrics}    
 
     scores = {metric: torch.zeros(num_classes) for metric in metrics}
     #scores = torch.zeros(num_classes)
 
-    for i, class_id in enumerate(class_ids):
-        num_images_i = min(num_images, len(datasets[class_id])) if num_images > 0 else len(datasets[class_id])
-        dataset_i = datasets[class_id]#Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
+    for i in range(len(datasets)):
+        num_images_i = min(num_images, len(datasets[i])) if num_images > 0 else len(datasets[i])
+        dataset_i = datasets[i]#Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
         generated_images = get_class_generations(generator, dataset_i, reference_size, num_images_i, sampler)
         dataset_i = dataset_to_tensor(dataset_i)
 
