@@ -192,11 +192,11 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
     
 
 def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
-        num_classes=-1, image_size=-1):
+        image_size=-1):
 
     metric_fcts = {metric: METRICS[metric](device=device) for metric in metrics}    
 
-    scores = {metric: torch.zeros(num_classes) for metric in metrics}
+    scores = {metric: torch.zeros(len(datasets)) for metric in metrics}
     #scores = torch.zeros(num_classes)
 
     for i in range(len(datasets)):
@@ -212,7 +212,10 @@ def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metri
 
         for metric in metrics:
             transforms = TRANSFORMS[metric]
-            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i)).mean().item()
+            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i))
+
+    for k in scores.items():
+        scores[k] = scores[k].mean().item()
 
     return scores
 
