@@ -51,7 +51,7 @@ import math
 from torchmetrics.image.fid import FrechetInceptionDistance
 
 class FIDMetric2():
-    def __init__(self, normalize=True, dims=2048):
+    def __init__(self, normalize=True, dims=2048, device=torch.device("cuda")):
         self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
 
     def forward(self, fake_inputs, real_inputs):
