@@ -258,6 +258,16 @@ METRICS = {
     'lpips': LPIPSMetric
 }
 
+def apply_transforms(images, image_size=-1):
+    var = ((images + 1) / 2)
+    var[var < 0] = 0
+    var[var > 1] = 1
+
+    if image_size > 0:
+        transform = TF.Resize(image_size)
+        var = transform(var)
+
+    return var
 
 
 def get_class_generations(dataset, generator, class_id, num_images, reference_size, candidate_size, device, data_rng=None, noise_rng=None, data_kwargs={}, generator_kwargs={}):
@@ -279,10 +289,10 @@ def get_class_generations(dataset, generator, class_id, num_images, reference_si
     return generated_images
 
 def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
-        num_classes=-1, data_rng=None, noise_rng=None, data_kwargs={}, generator_kwargs={}, class_ids=None):
+        num_classes=-1, image_size=-1):
     if class_ids is None:
         num_classes = num_classes if num_classes > 0 else dataset.n
-        class_ids = torch.randperm(dataset.n, generator=data_rng)[:num_classes]
+        class_ids = torch.randperm(dataset.n)[:num_classes]
     else:
         num_classes = len(class_ids)
 
@@ -291,12 +301,14 @@ def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=
     scores = {metric: torch.zeros(num_classes) for metric in metrics}
     #scores = torch.zeros(num_classes)
 
-    for i, class_id in enumerate(class_ids):
+    for i, class_id in tqdm(enumerate(class_ids)):
         num_images_i = min(num_images, len(dataset.datasets[class_id])) if num_images > 0 else len(dataset.datasets[class_id])
-        generated_images = get_class_generations(dataset, generator, class_id, num_images_i, reference_size, candidate_size, device,
-            data_kwargs=data_kwargs, generator_kwargs=generator_kwargs, data_rng=data_rng, noise_rng=noise_rng)
+        generated_images = get_class_generations(dataset, generator, class_id, num_images_i, reference_size, candidate_size, device)
+        dataset_i = dataset_to_tensor(dataset.datasets[class_id])#Subset(dataset.datasets[class_id], range(num_images)) if num_images_i < len(dataset.datasets[class_id]) else dataset.datasets[class_id]
 
-        dataset_i = dataset.datasets[class_id]#Subset(dataset.datasets[class_id], range(num_images)) if num_images_i < len(dataset.datasets[class_id]) else dataset.datasets[class_id]
+        generated_images = apply_transforms(generated_images, image_size=image_size)
+        dataset_i = apply_transforms(dataset_i, image_size=image_size)
+
         for metric in metrics:
             scores[metric][i] = metric_fcts[metric](generated_images, dataset_i)
 
