@@ -176,7 +176,7 @@ def apply_transforms(images, image_size=-1):
 def get_class_generations(net, dataset, num_source_images, num_generations, sampler):
     def _generate_image(from_im):
         outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
-        codes=sampler(outputs, dist, test_opts)
+        codes=sampler(outputs)
         with torch.no_grad():
             res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
         return res0.cpu().detach()
@@ -253,7 +253,6 @@ if __name__=='__main__':
     transforms_dict = dataset_args['transforms'](opts).get_transforms()
     transform=transforms_dict['transform_inference']
 
-
     # get n distribution (only needs to be executed once)
     #if not os.path.exists(os.path.join(opts.n_distribution_path, 'n_distribution.npy')):
     #    class_embeddings=torch.load(os.path.join(test_opts.class_embedding_path, 'class_embeddings.pt'))
@@ -261,6 +260,8 @@ if __name__=='__main__':
 
 
     dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
+    sampler = Sampler(dist, test_opts)
+
 
     train_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['train_source_root'], opts=opts, transforms=transform)
     test_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['test_source_root'], opts=opts, transforms=transform)
@@ -268,14 +269,14 @@ if __name__=='__main__':
     time = datetime.datetime.now()
     outfile = os.path.join(test_opts.output_path, "%d_%d_%d_.txt" % (time.month, time.day, time.hour))
 
-    test_scores = evaluate_scores(test_datasets, net, 10, dist, test_opts, num_images=128, num_classes=-1)
+    test_scores = evaluate_scores(test_datasets, net, 10, sampler, num_images=128, num_classes=-1)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")
         for metric, metric_scores in test_scores.items():
             writer.write('%s:\t%f\n' % (metric, metric_scores.mean().item()))
 
-    train_scores = evaluate_scores(train_datasets, net, 10, dist, test_opts, num_images=100, num_classes=-1)
+    train_scores = evaluate_scores(train_datasets, net, 10, sampler, num_images=100, num_classes=-1)
 
     with open(outfile, 'a') as writer:
         writer.write("Train:\n")
