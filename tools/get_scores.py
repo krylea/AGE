@@ -214,7 +214,7 @@ def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metri
             transforms = TRANSFORMS[metric]
             scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i))
 
-    for k in scores.items():
+    for k in scores.keys():
         scores[k] = scores[k].mean().item()
 
     return scores
