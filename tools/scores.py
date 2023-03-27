@@ -54,7 +54,7 @@ class FIDMetric2():
     def __init__(self, normalize=True, dims=2048, device=torch.device("cuda")):
         self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
 
-    def forward(self, fake_inputs, real_inputs):
+    def __call__(self, fake_inputs, real_inputs):
         self.fid.reset()
         self.fid.update(real_inputs, real=True)
         self.fid.update(fake_inputs, real=False)
