@@ -178,7 +178,7 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
         outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
         codes=sampler(outputs)
         with torch.no_grad():
-            res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
+            res0 = net.decode(codes, randomize_noise=False, resize=sampler.opts.resize_outputs)
         return res0.cpu().detach()
     
     source_images = [dataset[i] for i in random.choices(range(len(dataset)), k=num_source_images)]
