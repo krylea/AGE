@@ -239,7 +239,7 @@ def evaluate_fid_all(datasets, generator, reference_size, sampler, device=torch.
         dataset.append(fid_transform(dataset_i))
     
     generated_images = torch.cat(generated_images, dim=0)
-    dataset = torch.stack(dataset, dim=0)
+    dataset = torch.cat(dataset, dim=0)
 
     return fid(generated_images, dataset)
 
