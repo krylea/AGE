@@ -245,7 +245,8 @@ if __name__=='__main__':
         opts['output_size'] = 1024
     #opts['output_size'] = 256
     opts = Namespace(**opts)
-    opts.resize_outputs=True
+    #opts.resize_outputs=True
+    opts.output_size=256
     net = AGE(opts)
     net.eval()
     net.cuda()
@@ -276,7 +277,7 @@ if __name__=='__main__':
         for metric, metric_scores in test_scores.items():
             writer.write('%s:\t%f\n' % (metric, metric_scores.mean().item()))
 
-    train_scores = evaluate_scores(train_datasets, net, 10, sampler, num_images=100, num_classes=-1)
+    train_scores = evaluate_scores(train_datasets, net, 10, sampler, num_images=128, num_classes=-1)
 
     with open(outfile, 'a') as writer:
         writer.write("Train:\n")
