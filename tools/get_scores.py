@@ -303,7 +303,7 @@ if __name__=='__main__':
     time = datetime.datetime.now()
     outfile = os.path.join(test_opts.output_path, "%d_%d_%d%d_.txt" % (time.month, time.day, time.hour, time.minute))
 
-    evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_fid_all
+    evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
 
     test_scores = evaluate_scores(test_datasets, net, 1, sampler, num_images=128)
 
