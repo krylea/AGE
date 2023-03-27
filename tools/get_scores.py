@@ -17,7 +17,7 @@ from utils.common import tensor2im
 from options.test_options import TestOptions
 from models.age import AGE
 
-from tools.scores import METRICS, dataset_to_tensor
+from tools.scores import METRICS, TRANSFORMS, dataset_to_tensor
 
 #
 #   Dataset stuff
@@ -210,13 +210,17 @@ def evaluate_scores(datasets, generator, reference_size, sampler, metrics=('fid'
         generated_images = get_class_generations(generator, dataset_i, reference_size, num_images_i, sampler)
         dataset_i = dataset_to_tensor(dataset_i)
 
-        generated_images = apply_transforms(generated_images, image_size=image_size)
-        dataset_i = apply_transforms(dataset_i, image_size=image_size)
+        if image_size > 0:
+            transform = TF.Resize(image_size)
+            generated_images = transform(generated_images)
+            dataset_i = transform(dataset_i)
 
         for metric in metrics:
-            scores[metric][i] = metric_fcts[metric](generated_images, dataset_i)
+            transforms = TRANSFORMS[metric]
+            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i))
 
     return scores
+
 
 from einops import rearrange
 def save_images(images, path):

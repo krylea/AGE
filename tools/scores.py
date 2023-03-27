@@ -253,63 +253,25 @@ class LPIPSMetric():
         return pair_scores.sum() / (pair_scores.nelement() - N)
 
 
-METRICS = {
-    'fid': FIDMetric2,
-    'lpips': LPIPSMetric
-}
-
-def apply_transforms(images, image_size=-1):
+def fid_transform(images):
     var = ((images + 1) / 2)
     var[var < 0] = 0
     var[var > 1] = 1
+    return images
 
-    if image_size > 0:
-        transform = TF.Resize(image_size)
-        var = transform(var)
-
+def lpips_transform(images):
+    var = images.clone()
+    var[var < -1] = -1
+    var[var > 1] = 1
     return var
 
-
-def get_class_generations(dataset, generator, class_id, num_images, reference_size, candidate_size, device, data_rng=None, noise_rng=None, data_kwargs={}, generator_kwargs={}):
-    generated_images = None
-    num_batches = int(math.ceil(num_images / candidate_size))
-    reference_batch, = dataset(1, set_sizes=(reference_size,), class_id=class_id, rng=data_rng, **data_kwargs)
-    reference_batch = reference_batch.to(device)
-    with torch.no_grad():
-        for j in range(num_batches):
-            candidate_size_j = min(candidate_size, num_images - j*candidate_size)
-            noise = torch.randn(1, candidate_size_j, generator.args.latent, generator=noise_rng).to(device)
-            generated_images_j = generator([noise], reference_batch, **generator_kwargs)[0].cpu().squeeze(0)
-
-            if generated_images is None:
-                generated_images = generated_images_j
-            else:
-                generated_images = torch.cat((generated_images, generated_images_j), dim=0)
-
-    return generated_images
-
-def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
-        num_classes=-1, image_size=-1):
-    if class_ids is None:
-        num_classes = num_classes if num_classes > 0 else dataset.n
-        class_ids = torch.randperm(dataset.n)[:num_classes]
-    else:
-        num_classes = len(class_ids)
-
-    metric_fcts = {metric: METRICS[metric](device=device) for metric in metrics}    
-
-    scores = {metric: torch.zeros(num_classes) for metric in metrics}
-    #scores = torch.zeros(num_classes)
-
-    for i, class_id in tqdm(enumerate(class_ids)):
-        num_images_i = min(num_images, len(dataset.datasets[class_id])) if num_images > 0 else len(dataset.datasets[class_id])
-        generated_images = get_class_generations(dataset, generator, class_id, num_images_i, reference_size, candidate_size, device)
-        dataset_i = dataset_to_tensor(dataset.datasets[class_id])#Subset(dataset.datasets[class_id], range(num_images)) if num_images_i < len(dataset.datasets[class_id]) else dataset.datasets[class_id]
-
-        generated_images = apply_transforms(generated_images, image_size=image_size)
-        dataset_i = apply_transforms(dataset_i, image_size=image_size)
-
-        for metric in metrics:
-            scores[metric][i] = metric_fcts[metric](generated_images, dataset_i)
-
-    return scores
+METRICS = {
+    'fid': FIDMetric,
+    'fid2': FIDMetric2,
+    'lpips': LPIPSMetric
+}
+TRANSFORMS = {
+    'fid': fid_transform,
+    'fid2': fid_transform,
+    'lpips': lpips_transform
+}
