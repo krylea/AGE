@@ -247,7 +247,7 @@ def evaluate_scores_all(datasets, generator, reference_size, sampler, device=tor
          image_size=-1):
     
     lpips_scores = evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('lpips'), 
-                                            num_images=num_images, num_classes=-1, image_size=image_size)['lpips'].mean().item()
+                                            num_images=num_images, num_classes=-1, image_size=image_size)['lpips']#.mean().item()
     
     fid_scores = evaluate_fid_all(datasets, generator, reference_size, sampler, num_images=num_images, image_size=image_size)
 
