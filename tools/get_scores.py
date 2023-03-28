@@ -316,14 +316,14 @@ if __name__=='__main__':
 
     evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
 
-    test_scores = evaluate_scores(test_datasets, net, opts.num_images, sampler, num_images=128)
+    test_scores = evaluate_scores(test_datasets, net, opts.kshot, sampler, num_images=opts.n_images)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")
         for metric, metric_scores in test_scores.items():
             writer.write('%s:\t%f\n' % (metric, metric_scores))
 
-    train_scores = evaluate_scores(train_datasets, net, opts.num_images, sampler, num_images=128)
+    train_scores = evaluate_scores(train_datasets, net, opts.kshot, sampler, num_images=opts.n_images)
 
     with open(outfile, 'a') as writer:
         writer.write("Train:\n")

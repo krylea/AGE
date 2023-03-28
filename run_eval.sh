@@ -16,8 +16,9 @@ name=$1
 dataset=$2
 output_size=$3
 num_images=$4
-renorm=$5
-resize_outputs=$6
+kshot=$5
+renorm=$6
+resize_outputs=$7
 
 run_name="${dataset}-pretrained"
 pretrained_model_dir="pretrained_models"
@@ -43,7 +44,8 @@ argstring="--name=$name \
 --n_images=$num_images \
 --alpha=1 \
 --beta=0.005 \
---output_size=$output_size"
+--output_size=$output_size
+--kshot=$kshot"
 
 if [ $renorm -eq 1 ]
 then

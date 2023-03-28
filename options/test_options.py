@@ -21,7 +21,7 @@ class TestOptions:
 		self.parser.add_argument('--test_batch_size', default=2, type=int, help='Batch size for testing and inference')
 		self.parser.add_argument('--test_workers', default=2, type=int, help='Number of test/inference dataloader workers')
 		
-		self.parser.add_argument('--n_images', type=int, default=128, help='Number of images to generate on per input')
+		self.parser.add_argument('--n_images', type=int, default=128, help='Number of images to generate per reference class')
 		self.parser.add_argument('--A_length', default=100, type=int, help='Length of A')
 		self.parser.add_argument('--alpha', default=1, type=float, help='Editing intensity alpha')
 		self.parser.add_argument('--beta', default=0.000, type=float, help='Direction selection threshold in A')
@@ -31,6 +31,7 @@ class TestOptions:
 		self.parser.add_argument('--renorm', action='store_true', help='Whether to use renormalization from [-1,1] to [0,1]')
 		self.parser.add_argument('--output_size', type=int, default=256, help='Model output size')
 		self.parser.add_argument('--name', type=str, default="", help='Eval run name')
+		self.parser.add_argument('--kshot', type=int, default=1, help='Number of images to condition on per input')
 		
 	def parse(self):
 		opts = self.parser.parse_args()
