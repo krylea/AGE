@@ -15,6 +15,11 @@ export CUDA_HOME="/pkgs/cuda-11.7/"
 dataset=$1
 run_name="${dataset}-pretrained"
 
+output_size=$2
+num_images=$3
+renorm=$4
+resize_outputs=$5
+
 pretrained_model_dir="pretrained_models"
 
 psp_checkpoint_path="${pretrained_model_dir}/psp_${dataset}.pt"
@@ -25,16 +30,27 @@ n_distribution_path="n_distribution/${run_name}"
 
 dataset_path="../setgan2/datasets/animal_faces"
 
-python3 tools/get_scores.py \
---output_path=eval \
+argstring="--output_path=eval \
 --checkpoint_path=$age_checkpoint_path \
 --test_data_path=$dataset_path/test \
 --train_data_path=data/$dataset_path/train \
---dataset_type="${dataset}_encode" \
+--dataset_type=${dataset}_encode \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --test_batch_size=4 \
 --test_workers=4 \
---n_images=5 \
+--n_images=$num_images \
 --alpha=1 \
---beta=0.005
+--beta=0.005 \
+--output_size=$output_size"
+
+if [ $renorm -eq 1 ]
+then
+    argstring="$argstring --renorm"
+fi
+if [ $resize_outputs -eq 1 ]
+then
+    argstring="$argstring --resize_outputs"
+fi
+
+python3 tools/get_scores.py $argstring

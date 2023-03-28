@@ -191,7 +191,7 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
     return torch.cat(generated_images, dim=0)
     
 
-def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
+def evaluate_scores_by_class(datasets, generator, reference_size, sampler, renorm=True, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
         image_size=-1):
 
     metric_fcts = {metric: METRICS[metric](device=device) for metric in metrics}    
@@ -209,17 +209,23 @@ def evaluate_scores_by_class(datasets, generator, reference_size, sampler, metri
             transform = TF.Resize(image_size)
             generated_images = transform(generated_images)
             dataset_i = transform(dataset_i)
-
+        
         for metric in metrics:
-            transforms = TRANSFORMS[metric]
-            scores[metric][i] = metric_fcts[metric](transforms(generated_images), transforms(dataset_i))
+            if renorm:
+                transforms = TRANSFORMS[metric]
+                generated_images_transformed = transforms(generated_images)
+                dataset_transformed = transforms(dataset_i)
+            else:
+                generated_images_transformed = generated_images
+                dataset_transformed = dataset_i
+            scores[metric][i] = metric_fcts[metric](generated_images_transformed, dataset_transformed)
 
     for k in scores.keys():
         scores[k] = scores[k].mean().item()
 
     return scores
 
-def evaluate_fid_all(datasets, generator, reference_size, sampler, device=torch.device("cuda"), num_images=-1, 
+def evaluate_fid_all(datasets, generator, reference_size, sampler, renorm=True, device=torch.device("cuda"), num_images=-1, 
          image_size=-1):
     fid = FIDMetric()   
 
@@ -234,22 +240,26 @@ def evaluate_fid_all(datasets, generator, reference_size, sampler, device=torch.
             transform = TF.Resize(image_size)
             generated_images_i = transform(generated_images_i)
             dataset_i = transform(dataset_i)
+
+        if renorm:
+            generated_images_i = fid_transform(generated_images_i)
+            dataset_i = fid_transform(dataset_i)
         
-        generated_images.append(fid_transform(generated_images_i))
-        dataset.append(fid_transform(dataset_i))
+        generated_images.append(generated_images_i)
+        dataset.append(dataset_i)
     
     generated_images = torch.cat(generated_images, dim=0)
     dataset = torch.cat(dataset, dim=0)
 
     return fid(generated_images, dataset)
 
-def evaluate_scores_all(datasets, generator, reference_size, sampler, device=torch.device("cuda"), num_images=-1, 
+def evaluate_scores_all(datasets, generator, reference_size, sampler, renorm=True, device=torch.device("cuda"), num_images=-1, 
          image_size=-1):
     
-    lpips_scores = evaluate_scores_by_class(datasets, generator, reference_size, sampler, metrics=('lpips',), 
+    lpips_scores = evaluate_scores_by_class(datasets, generator, reference_size, sampler, renorm=renorm, metrics=('lpips',), 
                                             num_images=num_images, image_size=image_size)['lpips']#.mean().item()
     
-    fid_scores = evaluate_fid_all(datasets, generator, reference_size, sampler, num_images=num_images, image_size=image_size)
+    fid_scores = evaluate_fid_all(datasets, generator, reference_size, sampler, renorm=renorm, num_images=num_images, image_size=image_size)
 
     return {'lpips': lpips_scores, 'fid': fid_scores}
 
@@ -305,14 +315,14 @@ if __name__=='__main__':
 
     evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
 
-    test_scores = evaluate_scores(test_datasets, net, 1, sampler, num_images=128)
+    test_scores = evaluate_scores(test_datasets, net, opts.num_images, sampler, num_images=128)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")
         for metric, metric_scores in test_scores.items():
             writer.write('%s:\t%f\n' % (metric, metric_scores))
 
-    train_scores = evaluate_scores(train_datasets, net, 1, sampler, num_images=128)
+    train_scores = evaluate_scores(train_datasets, net, opts.num_images, sampler, num_images=128)
 
     with open(outfile, 'a') as writer:
         writer.write("Train:\n")

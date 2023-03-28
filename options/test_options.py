@@ -26,7 +26,11 @@ class TestOptions:
 		self.parser.add_argument('--alpha', default=1, type=float, help='Editing intensity alpha')
 		self.parser.add_argument('--beta', default=0.000, type=float, help='Direction selection threshold in A')
 		self.parser.add_argument('--resize_outputs', action='store_true', help='Whether to resize outputs to 256x256 or keep at 1024x1024')
+		
 		self.parser.add_argument('--combine_fid', action='store_true', help='Whether to compute fid by class or for all classes')
+		self.parser.add_argument('--renorm', action='store_true', help='Whether to use renormalization from [-1,1] to [0,1]')
+		self.parser.add_argument('--output_size', type=int, help='Model output size')
+		
 	def parse(self):
 		opts = self.parser.parse_args()
 		return opts
