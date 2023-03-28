@@ -311,7 +311,8 @@ if __name__=='__main__':
     test_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['test_source_root'], opts=opts, transforms=transform)
     
     time = datetime.datetime.now()
-    outfile = os.path.join(test_opts.output_path, "%s_%d_%d_%d.txt" % (opts.name, time.month, time.day, time.hour, time.minute))
+    outname = opts.name + ".txt" if len(opts.name) > 0 else "%d_%d_%d%d.txt" % (time.month, time.day, time.hour, time.minute)
+    outfile = os.path.join(test_opts.output_path, outname)
 
     evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
 
