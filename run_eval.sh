@@ -12,14 +12,14 @@
 export PYTHONPATH="$PYTHONPATH:./"
 export CUDA_HOME="/pkgs/cuda-11.7/"
 
-dataset=$1
+name=$1
+dataset=$2
+output_size=$3
+num_images=$4
+renorm=$5
+resize_outputs=$6
+
 run_name="${dataset}-pretrained"
-
-output_size=$2
-num_images=$3
-renorm=$4
-resize_outputs=$5
-
 pretrained_model_dir="pretrained_models"
 
 psp_checkpoint_path="${pretrained_model_dir}/psp_${dataset}.pt"
@@ -30,7 +30,8 @@ n_distribution_path="n_distribution/${run_name}"
 
 dataset_path="../setgan2/datasets/animal_faces"
 
-argstring="--output_path=eval \
+argstring="--name=$name \
+--output_path=eval \
 --checkpoint_path=$age_checkpoint_path \
 --test_data_path=$dataset_path/test \
 --train_data_path=data/$dataset_path/train \
