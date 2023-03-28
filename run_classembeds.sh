@@ -27,6 +27,7 @@ n_distribution_path="n_distribution/${run_name}/n_distribution_${output_size}.np
 if [ ! -f $class_embedding_path ]
 then
     python tools/get_class_embedding.py \
+    --dataset_type="${dataset}_encode" \
     --class_embedding_path=$class_embedding_path \
     --psp_checkpoint_path=$psp_checkpoint_path \
     --train_data_path=$data_path \
@@ -38,6 +39,7 @@ fi
 if [ ! -f $n_distribution_path ]
 then
     python tools/get_n_distribution.py \
+    --dataset_type="${dataset}_encode" \
     --class_embedding_path=$class_embedding_path \
     --n_distribution_path=$n_distribution_path \
     --checkpoint_path=$age_checkpoint_path \
