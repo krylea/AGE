@@ -40,7 +40,7 @@ def run():
     transform = transforms_dict['transform_inference']
     data_path=test_opts.train_data_path
     class_embedding_path=test_opts.class_embedding_path
-    os.makedirs(class_embedding_path, exist_ok=True)
+    os.makedirs(os.path.dirname(class_embedding_path), exist_ok=True)
     dataset = InferenceDataset(root=data_path,
                             transform=transform,
                             opts=opts)
@@ -69,7 +69,7 @@ def run():
     means={}
     for cate in codes.keys():
         means[cate]=codes[cate]/counts[cate]
-    torch.save(means, os.path.join(class_embedding_path, 'class_embeddings.pt'))
+    torch.save(means, class_embedding_path)
 
 if __name__ == '__main__':
     run()

@@ -37,8 +37,8 @@ def get_n_distribution(net, transform, class_embeddings, opts):
     cov=[]
     for i in range(codes.shape[0]):
         cov.append(np.cov(codes[i].T))
-    os.makedirs(opts.n_distribution_path, exist_ok=True)
-    np.save(os.path.join(opts.n_distribution_path, 'n_distribution.npy'),{'mean':mean, 'mean_abs':mean_abs, 'cov':cov})
+    os.makedirs(os.path.dirname(opts.n_distribution_path), exist_ok=True)
+    np.save(opts.n_distribution_path,{'mean':mean, 'mean_abs':mean_abs, 'cov':cov})
 
 if __name__=='__main__':
     SEED = 0
@@ -62,5 +62,5 @@ if __name__=='__main__':
     transforms_dict = dataset_args['transforms'](opts).get_transforms()
     transform=transforms_dict['transform_inference']
 
-    class_embeddings=torch.load(os.path.join(test_opts.class_embedding_path, 'class_embeddings.pt'))
+    class_embeddings=torch.load(test_opts.class_embedding_path)
     get_n_distribution(net, transform, class_embeddings, test_opts)

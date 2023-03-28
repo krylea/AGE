@@ -303,7 +303,7 @@ if __name__=='__main__':
     #    get_n_distribution(net, transform, class_embeddings, test_opts)
 
 
-    dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
+    dist=np.load(opts.n_distribution_path, allow_pickle=True).item()
     sampler = Sampler(dist, opts)
 
 
