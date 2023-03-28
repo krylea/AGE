@@ -11,9 +11,10 @@
 
 export PYTHONPATH="$PYTHONPATH:./"
 
-run_name=$1
-dataset=$2
-output_size=$3
+dataset=$1
+output_size=$2
+
+run_name="${dataset}-pretrained"
 
 psp_checkpoint_path="pretrained_models/psp_${dataset}.pt"
 age_checkpoint_path="pretrained_models/age_${dataset}.pt"
