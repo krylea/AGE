@@ -26,8 +26,8 @@ pretrained_model_dir="pretrained_models"
 psp_checkpoint_path="${pretrained_model_dir}/psp_${dataset}.pt"
 age_checkpoint_path="${pretrained_model_dir}/age_${dataset}.pt"
 
-class_embedding_path="class_embeds/${run_name}/class_embeddings.pt"
-n_distribution_path="n_distribution/${run_name}/n_distribution.npy"
+class_embedding_path="class_embeds/${run_name}/class_embeddings_${output_size}.pt"
+n_distribution_path="n_distribution/${run_name}/n_distribution_${output_size}.npy"
 
 dataset_path="../setgan2/datasets/animal_faces"
 
