@@ -28,7 +28,7 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import numpy as np
 import torch
-from torchvision.transforms import Lambda, Resize, ComposeTransform
+from torchvision.transforms import Lambda, Resize, Compose
 from PIL import Image
 from scipy import linalg
 from torch.nn.functional import adaptive_avg_pool2d

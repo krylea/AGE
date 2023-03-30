@@ -35,7 +35,7 @@ import torch
 
 import torchvision
 import torchvision.transforms.functional as TF
-from torchvision.transforms import Lambda, Resize, ComposeTransform
+from torchvision.transforms import Lambda, Resize, Compose
 
 import numpy as np
 import cv2
@@ -211,7 +211,7 @@ def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=
     transforms = [Lambda(clamp)]
     if image_size > 0:
         transforms.append(Resize(image_size))
-    transforms = ComposeTransform(transforms)
+    transforms = Compose(transforms)
     
     all_class_generations = get_class_generations(dataset, generator, num_images, reference_size, candidate_size, device, transforms=transforms)
     datasets = torch.stack([transforms(dataset_to_tensor(dataset_i)) for dataset_i in dataset.datasets])
