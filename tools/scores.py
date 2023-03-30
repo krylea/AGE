@@ -232,8 +232,6 @@ class FID():
         dataset_metrics_path = os.path.join(self.metrics_path, label+".npz")
         np.savez(dataset_metrics_path, mu=m, sigma=s)
 
-    
-
     def __call__(self, dataset1, dataset2, batch_size=50, num_workers=1):
         m1, s1 = self.get_dataset_metrics(dataset1, batch_size=batch_size, num_workers=num_workers)
         m2, s2 = self.get_dataset_metrics(dataset2, batch_size=batch_size, num_workers=num_workers)
@@ -246,8 +244,11 @@ class FIDMetric():
         self.fid = FID(dims=dims, device=device)
 
     def _preprocess(self, dataset, renorm=True):
-        if len(dataset.size()) == 5:
+        if type(dataset) is list:
+            dataset = torch.cat(dataset, dim=0)
+        elif len(dataset.size()) == 5:
             dataset = dataset.view(-1, *dataset.size()[-3:])
+            
         if renorm:#convert from [-1,1] to [0,1]
             dataset = (dataset + 1)/2
         return dataset
@@ -273,14 +274,16 @@ class LPIPSMetric():
         return pair_scores.sum() / (pair_scores.nelement() - N)
 
     def __call__(self, images, *args):
-        if len(images.size()) == 4:
-            return self._evaluate_class(images)
-        elif len(images.size()) == 5:
+        if type(images) is list or len(images.size()) == 5:
             N = images.size(0)
             scores = torch.zeros(N)
             for i in range(N):
                 scores[i] = self._evaluate_class(images[i])
             return scores.mean().item()
+        elif len(images.size()) == 4:
+            return self._evaluate_class(images)
+        else:
+            raise NotImplementedError()
 
 
 METRICS = {

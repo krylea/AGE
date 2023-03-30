@@ -173,7 +173,7 @@ def apply_transforms(images, image_size=-1):
 
     return var
 
-def get_class_generations(net, datasets, num_source_images, num_generations, sampler, class_ids=None, transforms=None):
+def get_class_generations(net, datasets, num_source_images, num_generations, sampler, class_ids=None, transforms=None, seed=None):
     def _generate_image(from_im):
         outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
         codes=sampler(outputs)
@@ -181,8 +181,12 @@ def get_class_generations(net, datasets, num_source_images, num_generations, sam
             res0 = net.decode(codes, randomize_noise=False, resize=sampler.opts.resize_outputs)
         return res0.cpu().detach()
     
+    if seed is not None:
+        random.seed(seed)
+        torch.manual_seed(seed)
+    
     if class_ids is None:
-        class_ids = range(len(dataset))
+        class_ids = range(len(datasets))
 
     generated_images = []
     for class_id in class_ids:
