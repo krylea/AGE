@@ -28,7 +28,7 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import numpy as np
 import torch
-import torchvision.transforms as TF
+from torchvision.transforms import Lambda, Resize, ComposeTransform
 from PIL import Image
 from scipy import linalg
 from torch.nn.functional import adaptive_avg_pool2d
@@ -50,6 +50,7 @@ import math
 
 from torchmetrics.image.fid import FrechetInceptionDistance
 
+
 def dataset_to_tensor(dataset):
     if isinstance(dataset, IterableDataset):
         tensors = [x for x in dataset]
@@ -69,8 +70,7 @@ class FIDMetric2():
         self.fid.update(fake_inputs, real=False)
         return self.fid.compute()
 
-
-class FIDMetric():
+class FID():
     def __init__(self, dims=2048, device=torch.device("cuda"), metrics_path=None, eps=1e-6):
         self.dims = dims
         self.device = device
@@ -78,6 +78,7 @@ class FIDMetric():
         self.model = InceptionV3([self.block_idx]).to(self.device)
         self.metrics_path = metrics_path
         self.eps = eps
+
 
     def get_activations(self, dataset, batch_size=50, num_workers=1, max_batches=-1):
         """Calculates the activations of the pool_3 layer for all images.
@@ -231,6 +232,8 @@ class FIDMetric():
         dataset_metrics_path = os.path.join(self.metrics_path, label+".npz")
         np.savez(dataset_metrics_path, mu=m, sigma=s)
 
+    
+
     def __call__(self, dataset1, dataset2, batch_size=50, num_workers=1):
         m1, s1 = self.get_dataset_metrics(dataset1, batch_size=batch_size, num_workers=num_workers)
         m2, s2 = self.get_dataset_metrics(dataset2, batch_size=batch_size, num_workers=num_workers)
@@ -238,12 +241,29 @@ class FIDMetric():
         return self.calculate_frechet_distance(m1, s1, m2, s2)
 
 
+class FIDMetric():
+    def __init__(self, device=torch.device("cuda"), dims=2048):
+        self.fid = FID(dims=dims, device=device)
+
+    def _preprocess(self, dataset, renorm=True):
+        if len(dataset.size()) == 5:
+            dataset = dataset.view(-1, *dataset.size()[-3:])
+        if renorm:#convert from [-1,1] to [0,1]
+            dataset = (dataset + 1)/2
+        return dataset
+    
+    def __call__(self, fake_images, real_images, batch_size=50, num_workers=1, renorm=True):
+        fake_images = self._preprocess(fake_images, renorm=renorm)
+        real_images = self._preprocess(real_images, renorm=renorm)
+
+        return self.fid(fake_images, real_images, batch_size=batch_size, num_workers=num_workers)
+
 class LPIPSMetric():
     def __init__(self, device=torch.device('cuda'), net='alex'):
         self.lpips = lpips.LPIPS(net=net).to(device)
         self.device = device
 
-    def __call__(self, images, *args):
+    def _evaluate_class(self, images):
         N = images.size(0)
         pair_scores = torch.zeros(N, N)
         for j in range(N):
@@ -252,26 +272,26 @@ class LPIPSMetric():
         pair_scores.fill_diagonal_(0)
         return pair_scores.sum() / (pair_scores.nelement() - N)
 
+    def __call__(self, images, *args):
+        if len(images.size()) == 4:
+            return self._evaluate_class(images)
+        elif len(images.size()) == 5:
+            N = images.size(0)
+            scores = torch.zeros(N)
+            for i in range(N):
+                scores[i] = self._evaluate_class(images[i])
+            return scores.mean().item()
 
-def fid_transform(images):
-    var = ((images + 1) / 2)
-    var[var < 0] = 0
-    var[var > 1] = 1
-    return var
-
-def lpips_transform(images):
-    var = images.clone()
-    var[var < -1] = -1
-    var[var > 1] = 1
-    return var
 
 METRICS = {
     'fid': FIDMetric,
-    'fid2': FIDMetric2,
     'lpips': LPIPSMetric
 }
-TRANSFORMS = {
-    'fid': fid_transform,
-    'fid2': fid_transform,
-    'lpips': lpips_transform
-}
+
+
+def clamp(images):
+    images[images < -1] = -1
+    images[images > 1] = 1
+    return images
+
+    

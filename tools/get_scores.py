@@ -17,7 +17,7 @@ from utils.common import tensor2im
 from options.test_options import TestOptions
 from models.age import AGE
 
-from tools.scores import METRICS, TRANSFORMS, dataset_to_tensor, FIDMetric, fid_transform
+from tools.scores import METRICS, dataset_to_tensor, clamp
 
 #
 #   Dataset stuff
@@ -35,6 +35,7 @@ import torch
 
 import torchvision
 import torchvision.transforms.functional as TF
+from torchvision.transforms import Lambda, Resize, ComposeTransform
 
 import numpy as np
 import cv2
@@ -172,8 +173,7 @@ def apply_transforms(images, image_size=-1):
 
     return var
 
-
-def get_class_generations(net, dataset, num_source_images, num_generations, sampler):
+def get_class_generations(net, datasets, num_source_images, num_generations, sampler, class_ids=None, transforms=None):
     def _generate_image(from_im):
         outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
         codes=sampler(outputs)
@@ -181,95 +181,48 @@ def get_class_generations(net, dataset, num_source_images, num_generations, samp
             res0 = net.decode(codes, randomize_noise=False, resize=sampler.opts.resize_outputs)
         return res0.cpu().detach()
     
-    source_images = [dataset[i] for i in random.choices(range(len(dataset)), k=num_source_images)]
+    if class_ids is None:
+        class_ids = range(len(dataset))
 
     generated_images = []
-    for i in range(num_generations):
-        source_image = random.choice(source_images)
-        generated_images.append(_generate_image(source_image))
+    for class_id in class_ids:
+        dataset = datasets[class_id]
+        source_images = [dataset[i] for i in random.choices(range(len(dataset)), k=num_source_images)]
+
+        class_generations = []
+        for i in range(num_generations):
+            source_image = random.choice(source_images)
+            generated_image = _generate_image(source_image)
+            if transforms is not None:
+                generated_image = transforms(generated_image)
+            class_generations.append(generated_image)
+        class_generations = torch.cat(class_generations, dim=0)
+        generated_images.append(class_generations)
+    generated_images = torch.stack(generated_images, dim=0)
+
+    return generated_images
+
+
     
-    return torch.cat(generated_images, dim=0)
+def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
+        image_size=-1): 
+    scores = {}
+
+    transforms = [Lambda(clamp)]
+    if image_size > 0:
+        transforms.append(Resize(image_size))
+    transforms = ComposeTransform(transforms)
     
+    all_class_generations = get_class_generations(dataset, generator, num_images, reference_size, candidate_size, device, transforms=transforms)
+    datasets = torch.stack([transforms(dataset_to_tensor(dataset_i)) for dataset_i in dataset.datasets])
 
-def evaluate_scores_by_class(datasets, generator, reference_size, sampler, renorm=True, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
-        image_size=-1):
+    for metric in metrics:
+        metric_fct = METRICS[metric](device=device)
 
-    metric_fcts = {metric: METRICS[metric](device=device) for metric in metrics}    
-
-    scores = {metric: torch.zeros(len(datasets)) for metric in metrics}
-    #scores = torch.zeros(num_classes)
-
-    for i in range(len(datasets)):
-        num_images_i = min(num_images, len(datasets[i])) if num_images > 0 else len(datasets[i])
-        dataset_i = datasets[i]#Subset(datasets[class_id], range(num_images)) if num_images_i < len(datasets[class_id]) else datasets[class_id]
-        generated_images = get_class_generations(generator, dataset_i, reference_size, num_images_i, sampler)
-        dataset_i = dataset_to_tensor(dataset_i)
-
-        if image_size > 0:
-            transform = TF.Resize(image_size)
-            generated_images = transform(generated_images)
-            dataset_i = transform(dataset_i)
-        
-        for metric in metrics:
-            if renorm:
-                transforms = TRANSFORMS[metric]
-                generated_images_transformed = transforms(generated_images)
-                dataset_transformed = transforms(dataset_i)
-            else:
-                generated_images_transformed = generated_images
-                dataset_transformed = dataset_i
-            scores[metric][i] = metric_fcts[metric](generated_images_transformed, dataset_transformed)
-
-    for k in scores.keys():
-        scores[k] = scores[k].mean().item()
-
+        scores[metric] = metric_fct(all_class_generations, datasets)
+    
     return scores
 
-def evaluate_fid_all(datasets, generator, reference_size, sampler, renorm=True, device=torch.device("cuda"), num_images=-1, 
-         image_size=-1):
-    fid = FIDMetric()   
-
-    generated_images = []
-    dataset = []
-    for i in range(len(datasets)):
-        dataset_i = datasets[i]
-        generated_images_i = get_class_generations(generator, dataset_i, reference_size, num_images, sampler)
-        dataset_i = dataset_to_tensor(dataset_i)
-
-        if image_size > 0:
-            transform = TF.Resize(image_size)
-            generated_images_i = transform(generated_images_i)
-            dataset_i = transform(dataset_i)
-
-        if renorm:
-            generated_images_i = fid_transform(generated_images_i)
-            dataset_i = fid_transform(dataset_i)
-        
-        generated_images.append(generated_images_i)
-        dataset.append(dataset_i)
-    
-    generated_images = torch.cat(generated_images, dim=0)
-    dataset = torch.cat(dataset, dim=0)
-
-    return fid(generated_images, dataset)
-
-def evaluate_scores_all(datasets, generator, reference_size, sampler, renorm=True, device=torch.device("cuda"), num_images=-1, 
-         image_size=-1):
-    
-    lpips_scores = evaluate_scores_by_class(datasets, generator, reference_size, sampler, renorm=renorm, metrics=('lpips',), 
-                                            num_images=num_images, image_size=image_size)['lpips']#.mean().item()
-    
-    fid_scores = evaluate_fid_all(datasets, generator, reference_size, sampler, renorm=renorm, num_images=num_images, image_size=image_size)
-
-    return {'lpips': lpips_scores, 'fid': fid_scores}
-
-
-
-from einops import rearrange
-def save_images(images, path):
-    images_out = rearrange(images, 'b n c y x -> c (n y) (b x)')
-    images_out = tensor2im(images_out)
-    Image.fromarray(np.array(images_out)).save(path)
 
 
 if __name__=='__main__':
