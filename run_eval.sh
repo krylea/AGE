@@ -19,6 +19,7 @@ num_images=$4
 kshot=$5
 renorm=$6
 resize_outputs=$7
+ndist_suffix=$8
 
 run_name="${dataset}-pretrained"
 pretrained_model_dir="pretrained_models"
@@ -26,8 +27,8 @@ pretrained_model_dir="pretrained_models"
 psp_checkpoint_path="${pretrained_model_dir}/psp_${dataset}.pt"
 age_checkpoint_path="${pretrained_model_dir}/age_${dataset}.pt"
 
-class_embedding_path="class_embeds/${run_name}/class_embeddings_${output_size}.pt"
-n_distribution_path="n_distribution/${run_name}/n_distribution_${output_size}.npy"
+class_embedding_path="class_embeds/${run_name}/class_embeddings${ndist_suffix}.pt"
+n_distribution_path="n_distribution/${run_name}/n_distribution${ndist_suffix}.npy"
 
 dataset_path="../setgan2/datasets/animal_faces"
 
@@ -44,8 +45,8 @@ argstring="--name=$name \
 --n_images=$num_images \
 --alpha=1 \
 --beta=0.005 \
---output_size=$output_size
---kshot=$kshot
+--output_size=$output_size \
+--kshot=$kshot \
 --combine_fid"
 
 if [ $renorm -eq 1 ]
