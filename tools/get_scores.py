@@ -189,7 +189,7 @@ def get_class_generations(net, datasets, num_source_images, num_generations, sam
         class_ids = range(len(datasets))
 
     generated_images = []
-    for class_id in class_ids:
+    for class_id in tqdm(class_ids):
         dataset = datasets[class_id]
         source_images = [dataset[i] for i in random.choices(range(len(dataset)), k=num_source_images)]
 
@@ -218,7 +218,7 @@ def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=
     transforms = Compose(transforms)
     
     all_class_generations = get_class_generations(dataset, generator, num_images, reference_size, candidate_size, device, transforms=transforms)
-    datasets = torch.stack([transforms(dataset_to_tensor(dataset_i)) for dataset_i in dataset.datasets])
+    datasets = [transforms(dataset_to_tensor(dataset_i)) for dataset_i in dataset.datasets]
 
     for metric in metrics:
         metric_fct = METRICS[metric](device=device)

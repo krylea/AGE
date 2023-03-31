@@ -245,12 +245,16 @@ class FIDMetric():
 
     def _preprocess(self, dataset, renorm=True):
         if type(dataset) is list:
+            if renorm:#convert from [-1,1] to [0,1]
+                for dataset_i in dataset:
+                    dataset_i = (dataset_i + 1)/2
             dataset = torch.cat(dataset, dim=0)
         elif len(dataset.size()) == 5:
+            if renorm:#convert from [-1,1] to [0,1]
+                dataset = (dataset+1)/2
             dataset = dataset.view(-1, *dataset.size()[-3:])
             
-        if renorm:#convert from [-1,1] to [0,1]
-            dataset = (dataset + 1)/2
+
         return dataset
     
     def __call__(self, fake_images, real_images, batch_size=50, num_workers=1, renorm=True):
