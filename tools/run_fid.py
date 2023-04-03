@@ -1,7 +1,7 @@
 
 import torch
 import os
-from argparse import Namespace
+from argparse import Namespace, ArgumentParser
 
 from tqdm import tqdm
 import numpy as np
@@ -18,28 +18,30 @@ from utils.common import tensor2im
 from options.test_options import TestOptions
 from models.age import AGE
 
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('--dataset_type', type=str)
+    parser.add_argument('--output_path', type=str)
+    parser.add_argument('--test_data_path', type=str)
+    
+
+    return parser.parse_args()
+
 if __name__=='__main__':
     SEED = 0
     random.seed(SEED)
     np.random.seed(SEED)
 
     #load model
-    test_opts = TestOptions().parse()
-    ckpt = torch.load(test_opts.checkpoint_path, map_location='cpu')
-    opts = ckpt['opts']
-    opts.update(vars(test_opts))
-    if 'learn_in_w' not in opts:
-        opts['learn_in_w'] = False
-    if 'output_size' not in opts:
-        opts['output_size'] = 1024
-    opts = Namespace(**opts)
+    opts = parse_args()
 
     dataset_args = data_configs.DATASETS[opts.dataset_type]
     transforms_dict = dataset_args['transforms'](opts).get_transforms()
     transform=transforms_dict['transform_inference']
 
-    test_data_path=test_opts.test_data_path
-    output_path=test_opts.output_path
+    test_data_path=opts.test_data_path
+    output_path=opts.output_path
     os.makedirs(output_path, exist_ok=True)
 
     imagepaths = os.listdir(test_data_path)
