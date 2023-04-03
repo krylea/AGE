@@ -128,7 +128,7 @@ if __name__=='__main__':
 
     #from_ims = os.listdir(test_data_path)[:10]
     for category in images_by_category.values():
-        from_im_name = category[0]
+        from_im_name = category[0].split("/")[-1]
         for j in tqdm(range(test_opts.n_images)):
             from_im = Image.open(os.path.join(test_data_path, from_im_name))
             from_im = from_im.convert('RGB')
