@@ -127,7 +127,7 @@ if __name__=='__main__':
     images_by_category = get_category_paths(test_data_path)
 
     #from_ims = os.listdir(test_data_path)[:10]
-    for category in images_by_category:
+    for category in images_by_category.values():
         from_im_name = category[0]
         for j in tqdm(range(test_opts.n_images)):
             from_im = Image.open(os.path.join(test_data_path, from_im_name))
