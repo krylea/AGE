@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument('--dataset_type', type=str)
     parser.add_argument('--output_path', type=str)
     parser.add_argument('--test_data_path', type=str)
-    
+
 
     return parser.parse_args()
 
@@ -45,7 +45,7 @@ if __name__=='__main__':
     os.makedirs(output_path, exist_ok=True)
 
     imagepaths = os.listdir(test_data_path)
-    for imagepath in imagepaths:
+    for imagepath in tqdm(imagepaths):
         image = Image.open(os.path.join(test_data_path, imagepath))
         image = image.convert('RGB')
         image = transform(image)
