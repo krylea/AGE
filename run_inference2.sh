@@ -13,10 +13,11 @@ export PYTHONPATH="$PYTHONPATH:./"
 
 #psp_checkpoint_path=$1
 age_checkpoint_path=$1
+run_name=$2
 dataset=$3
 
-class_embedding_path="class_embeds/${dataset}-pretrained"
-n_distribution_path="n_distribution/${dataset}-pretrained/n_distribution.npy"
+class_embedding_path="class_embeds/${run_name}-pretrained"
+n_distribution_path="n_distribution/${run_name}-pretrained/n_distribution.npy"
 
 python tools/generate_images_for_metrics.py \
 --output_path=outputs/$run_name \
