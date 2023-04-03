@@ -10,6 +10,20 @@ DATASETS = {
 		'test_source_root': dataset_paths['animalfaces-test'],
 		'test_target_root': dataset_paths['animalfaces-test'],
 	},
+    'flowers_encode': {
+		'transforms': transforms_config.EncodeTransforms,
+		'train_source_root': dataset_paths['flowers-train'],
+		'train_target_root': dataset_paths['flowers-train'],
+		'test_source_root': dataset_paths['flowers-test'],
+		'test_target_root': dataset_paths['flowers-test'],
+	},
+    'vggface_encode': {
+		'transforms': transforms_config.EncodeTransforms,
+		'train_source_root': dataset_paths['vggface-train'],
+		'train_target_root': dataset_paths['vggface-train'],
+		'test_source_root': dataset_paths['vggface-test'],
+		'test_target_root': dataset_paths['vggface-test'],
+	},
 	'af_encode': {
 		'transforms': transforms_config.EncodeTransforms,
 		'train_source_root': dataset_paths['af_train'],

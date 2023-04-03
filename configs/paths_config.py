@@ -5,4 +5,8 @@ dataset_paths = {
 	'fl_valid': '/data/dgq/fpsp/data/flower/valid',
     'animalfaces-train': '../setgan2/datasets/animal_faces/train',
     'animalfaces-test': '../setgan2/datasets/animal_faces/test',
+    'flowers-train': '../setgan2/datasets/flowers/train',
+    'flowers-test': '../setgan2/datasets/flowers/test',
+    'vggface-train': '../setgan2/datasets/vggface/train',
+    'vggface-test': '../setgan2/datasets/vggface/test',
 }

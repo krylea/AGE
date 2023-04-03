@@ -58,7 +58,7 @@ def dataset_to_tensor(dataset):
         tensors = [dataset[i] for i in range(len(dataset))]
     return torch.stack(tensors, dim=0)
 
-class FIDMetric2():
+class FID2():
     def __init__(self, normalize=True, dims=2048, device=torch.device("cuda")):
         self.fid = FrechetInceptionDistance(dims=dims, normalize=normalize)
 
