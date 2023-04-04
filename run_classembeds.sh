@@ -21,7 +21,12 @@ run_name="${dataset}-pretrained"
 psp_checkpoint_path="pretrained_models/psp_${dataset}.pt"
 age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 
-data_path="../setgan2/datasets/animal_faces/train"
+if [ $dataset = "animalfaces" ]
+then
+    data_path="../setgan2/datasets/animal_faces/train"
+else
+    data_path="../setgan2/datasets/${dataset}/train"
+fi
 
 class_embedding_path="class_embeds/${run_name}/class_embeddings_${name}.pt"
 n_distribution_path="n_distribution/${run_name}/n_distribution_${name}.npy"
