@@ -29,7 +29,7 @@ class TestOptions:
 		
 		self.parser.add_argument('--combine_fid', action='store_true', help='Whether to compute fid by class or for all classes')
 		self.parser.add_argument('--renorm', action='store_true', help='Whether to use renormalization from [-1,1] to [0,1]')
-		self.parser.add_argument('--output_size', type=int, default=256, help='Model output size')
+		#self.parser.add_argument('--output_size', type=int, default=1024, help='Model output size')
 		self.parser.add_argument('--name', type=str, default="", help='Eval run name')
 		self.parser.add_argument('--kshot', type=int, default=1, help='Number of images to condition on per input')
 		
