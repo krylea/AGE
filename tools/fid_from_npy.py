@@ -106,7 +106,7 @@ parser.add_argument('--n_images', type=int, default=128)
 args = parser.parse_args()
 
 
-transform_list = [transforms.Resize((256, 256)), transforms.ToTensor(),
+transform_list = [ transforms.ToTensor(), transforms.Resize((256, 256)),
                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 transform = transforms.Compose(transform_list)
 
