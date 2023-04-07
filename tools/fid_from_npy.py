@@ -168,16 +168,17 @@ if __name__ == '__main__':
 
     if os.path.exists(fake_dir):
         dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
-        for j in range(args.n_images):
-            idx = np.random.choice(data_for_gen.shape[1], args.n_sample_test)
-            imgs = data_for_gen[cls, idx, :, :, :]
-            imgs = torch.cat([transform(img).unsqueeze(0) for img in imgs], dim=0).unsqueeze(0).cuda()
-            outputs = net.get_test_code(imgs.float())
-            codes=sampler(outputs, dist, opts)
-            with torch.no_grad():
-                res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
-            res0 = tensor2im(res0[0])
-            im_save_path = os.path.join(fake_dir, "image_%d_%d.jpg" % (i, j))
-            Image.fromarray(np.array(res0)).save(im_save_path)
+        for cls in tqdm(range(data_for_gen.shape[0]), desc='generating fake images'):
+            for i in range(128):
+                idx = np.random.choice(data_for_gen.shape[1], args.n_sample_test)
+                imgs = data_for_gen[cls, idx, :, :, :]
+                imgs = transform(imgs).cuda()
+                outputs = net.get_test_code(imgs.float())
+                codes=sampler(outputs, dist, opts)
+                with torch.no_grad():
+                    res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
+                res0 = tensor2im(res0[0])
+                im_save_path = os.path.join(fake_dir, "image_%d_%d.jpg" % (i, j))
+                Image.fromarray(np.array(res0)).save(im_save_path)
 
     fid(real_dir, fake_dir, args.gpu)
