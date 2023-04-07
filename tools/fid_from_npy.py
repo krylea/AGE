@@ -94,7 +94,7 @@ def sampler(outputs, dist, opts):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
-parser.add_argument('--dataset', type=str, default="animal")
+parser.add_argument('--dataset', type=str, default="animalfaces")
 parser.add_argument('--real_dir', type=str, default="results/flower_wavegan_base_index/reals")
 parser.add_argument('--fake_dir', type=str,default="results/flower_wavegan_base_index/tests")
 parser.add_argument('--n_sample_test', type=int, default=1)
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     if args.dataset == 'flower':
         data = data[85:]
         num = 10
-    elif args.dataset == 'animal':
+    elif args.dataset == 'animalfaces':
         data = data[119:]
         num = 10
     elif args.dataset == 'vggface':

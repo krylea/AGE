@@ -29,8 +29,6 @@ python tools/fid_from_npy.py \
 --real_dir=$real_dir \
 --fake_dir=$fake_dir \
 --dataset=$dataset \
---test_batch_size=4 \
---test_workers=4 \
 --alpha=1 \
 --beta=0.005 \
 --n_images 128
