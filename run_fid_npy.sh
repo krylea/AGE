@@ -10,6 +10,7 @@
 #SBATCH --exclude=gpu109
 
 dataset=$1
+name=$2
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -19,17 +20,15 @@ age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 train_data_path="../setgan2/datasets/${dataset}/train_all"
 test_data_path="../setgan2/datasets/${dataset}/test"
 
-output_path="outputs/${dataset}_pretrained"
+real_dir="outputs/${name}"
+fake_dir="outputs/${name}"
 
-python tools/fid.py \
---dataset_type="${dataset}_encode" \
---class_embedding_path=$class_embedding_path \
+python tools/fid_from_npy.py \
 --n_distribution_path=$n_distribution_path \
---psp_checkpoint_path=$psp_checkpoint_path \
 --checkpoint_path=$age_checkpoint_path \
---train_data_path=$train_data_path \
---test_data_path=$test_data_path \
---output_path=$output_path \
+--real_dir=$real_dir \
+--fake_dir=$fake_dir \
+--dataset=$dataset \
 --test_batch_size=4 \
 --test_workers=4 \
 --alpha=1 \
