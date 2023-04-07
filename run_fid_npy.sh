@@ -20,8 +20,8 @@ age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 train_data_path="../setgan2/datasets/${dataset}/train_all"
 test_data_path="../setgan2/datasets/${dataset}/test"
 
-real_dir="outputs/${name}"
-fake_dir="outputs/${name}"
+real_dir="outputs/${name}_real"
+fake_dir="outputs/${name}_fake"
 
 python tools/fid_from_npy.py \
 --n_distribution_path=$n_distribution_path \
