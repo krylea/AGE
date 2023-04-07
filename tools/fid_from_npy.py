@@ -33,12 +33,12 @@ from models.age import AGE
 from torch.utils.data import Dataset
 
 
-def fid(real, fake, gpu):
+def fid(real, fake):
     print('Calculating FID...')
     print('real dir: {}'.format(real))
     print('fake dir: {}'.format(fake))
     #command = 'python -m pytorch_fid {} {} --gpu {}'.format(real, fake, gpu)
-    command = 'python -m pytorch_fid {} {}'.format(real, fake)
+    command = 'python -m pytorch_fid {} {} --device cuda:0'.format(real, fake)
     os.system(command)
 
 
@@ -181,4 +181,4 @@ if __name__ == '__main__':
                 im_save_path = os.path.join(fake_dir, "image_%d_%d.jpg" % (cls, i))
                 Image.fromarray(np.array(res0)).save(im_save_path)
 
-    fid(real_dir, fake_dir, args.gpu)
+    fid(real_dir, fake_dir)
