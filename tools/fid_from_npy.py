@@ -131,9 +131,6 @@ if __name__ == '__main__':
     net = AGE(opts)
     net.eval()
     net.cuda()
-    dataset_args = data_configs.DATASETS[opts.dataset_type]
-    transforms_dict = dataset_args['transforms'](opts).get_transforms()
-    transform=transforms_dict['transform_inference']
 
     real_dir = args.real_dir
     fake_dir = args.fake_dir#os.path.join(args.name, args.fake_dir)
