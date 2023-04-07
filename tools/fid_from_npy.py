@@ -172,7 +172,7 @@ if __name__ == '__main__':
             for i in range(128):
                 idx = np.random.choice(data_for_gen.shape[1], args.n_sample_test)
                 imgs = data_for_gen[cls, idx, :, :, :]
-                imgs = transform(imgs).cuda()
+                imgs = torch.cat([transform(img).unsqueeze(0) for img in imgs], dim=0).cuda()
                 outputs = net.get_test_code(imgs.float())
                 codes=sampler(outputs, dist, opts)
                 with torch.no_grad():
