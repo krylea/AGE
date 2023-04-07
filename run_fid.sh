@@ -17,25 +17,18 @@ psp_checkpoint_path="pretrained_models/psp_${dataset}.pt"
 age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 
 train_data_path="../setgan2/datasets/${dataset}/train_all"
+test_data_path="../setgan2/datasets/${dataset}/test"
 
-python tools/get_class_embedding.py \
---dataset_type="${dataset}_encode" \
---class_embedding_path=$class_embedding_path \
---psp_checkpoint_path=$psp_checkpoint_path \
---train_data_path=$train_data_path \
---test_batch_size=4 \
---test_workers=4
-
-
-python tools/get_n_distribution.py \
+python tools/fid.py \
 --dataset_type="${dataset}_encode" \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --psp_checkpoint_path=$psp_checkpoint_path \
 --checkpoint_path=$age_checkpoint_path \
 --train_data_path=$train_data_path \
+--test_data_path=$test_data_path \
 --test_batch_size=4 \
 --test_workers=4 \
 --alpha=1 \
---beta=0.005
-
+--beta=0.005 \
+--n_images 128
