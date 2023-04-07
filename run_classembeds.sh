@@ -19,6 +19,7 @@ age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 train_data_path="../setgan2/datasets/${dataset}/train"
 
 python tools/get_class_embedding.py \
+--dataset_type="${dataset}_encode" \
 --class_embedding_path=$class_embedding_path \
 --psp_checkpoint_path=$psp_checkpoint_path \
 --train_data_path=$train_data_path \
@@ -27,6 +28,7 @@ python tools/get_class_embedding.py \
 
 
 python tools/get_n_distribution.py \
+--dataset_type="${dataset}_encode" \
 --class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
 --psp_checkpoint_path=$psp_checkpoint_path \

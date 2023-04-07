@@ -1,6 +1,6 @@
 dataset_paths = {
-	'af_train': '/data/dgq/fpsp/data/animal_faces/train/',
-	'af_valid': '/data/dgq/fpsp/data/animal_faces/valid/',
+	'af_train': '../setgan2/datasets/animalfaces/train',
+	'af_valid': '../setgan2/datasets/animalfaces/test',
 	'fl_train': '/data/dgq/fpsp/data/flower/train',
 	'fl_valid': '/data/dgq/fpsp/data/flower/valid',
 }
