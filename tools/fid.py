@@ -166,11 +166,11 @@ if __name__=='__main__':
     os.makedirs(output_path_fake, exist_ok=True)
     datasets = ImagesDataset.from_folder_by_category(test_data_path, opts, transforms=None)
     n_cond = 30
-    for i, class_dataset in enumerate(datasets):
+    for i, class_dataset in tqdm(enumerate(datasets)):
         all_class_images = [x for x in class_dataset]
         cond_images, fid_images = all_class_images[:n_cond], all_class_images[n_cond:]
-        for j in tqdm(range(test_opts.n_images)):
-            from_im = transform(random.sample(cond_images))
+        for j in range(test_opts.n_images):
+            from_im = transform(random.choice(cond_images))
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
             codes=sampler(outputs, dist, test_opts)
             with torch.no_grad():

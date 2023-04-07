@@ -19,6 +19,8 @@ age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 train_data_path="../setgan2/datasets/${dataset}/train_all"
 test_data_path="../setgan2/datasets/${dataset}/test"
 
+$output_path="outputs/${dataset}_pretrained"
+
 python tools/fid.py \
 --dataset_type="${dataset}_encode" \
 --class_embedding_path=$class_embedding_path \
@@ -27,6 +29,7 @@ python tools/fid.py \
 --checkpoint_path=$age_checkpoint_path \
 --train_data_path=$train_data_path \
 --test_data_path=$test_data_path \
+--output_path=$output_path \
 --test_batch_size=4 \
 --test_workers=4 \
 --alpha=1 \
