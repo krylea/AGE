@@ -211,7 +211,7 @@ def eval(args, opts, net, dist, datasets):
 parser = ArgumentParser()
 parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
 parser.add_argument('--dataset', type=str, default="animalfaces")
-parser.add_argument('--eval_path', type=str, default="eval_results.txt")
+parser.add_argument('--eval_path', type=str, default="eval_results2.txt")
 parser.add_argument('--real_dir', type=str, default="results/flower_wavegan_base_index/reals")
 parser.add_argument('--fake_dir', type=str,default="results/flower_wavegan_base_index/tests")
 parser.add_argument('--test_data_path', type=str)
@@ -262,7 +262,9 @@ if __name__=='__main__':
     lpips_out = sum(lpips_scores) / len(lpips_scores)
 
     with open(args.eval_path, 'a') as writer:
-        writer.write("%s:\tFID: %f\tLPIPS:%f\n" % (args.name, fid_out, lpips_out))
+        fid_scores_str = ", ".join(["%.2f" % (x,) for x in fid_scores])
+        lpips_scores_str = ", ".join(["%.2f" % (x,) for x in lpips_scores])
+        writer.write("%s:\tFID: %.2f (%s)\tLPIPS: %.2f (%s)\n" % (args.name, fid_out, fid_scores_str, lpips_out, lpips_scores_str)) 
 
 
 
