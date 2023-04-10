@@ -1,6 +1,6 @@
 import torch
 import os
-from argparse import Namespace
+from argparse import Namespace, ArgumentParser
 
 from tqdm import tqdm
 import numpy as np
@@ -173,7 +173,8 @@ def apply_transforms(images, image_size=-1):
 
     return var
 
-def get_class_generations(net, datasets, num_source_images, num_generations, sampler, class_ids=None, transforms=None, seed=None):
+
+def get_class_generations(net, reference_images, num_generations, sampler, class_ids=None, transforms=None, seed=None):
     def _generate_image(from_im):
         outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
         codes=sampler(outputs)
@@ -186,16 +187,13 @@ def get_class_generations(net, datasets, num_source_images, num_generations, sam
         torch.manual_seed(seed)
     
     if class_ids is None:
-        class_ids = range(len(datasets))
+        class_ids = range(len(reference_images))
 
     generated_images = []
     for class_id in tqdm(class_ids):
-        dataset = datasets[class_id]
-        source_images = [dataset[i] for i in random.choices(range(len(dataset)), k=num_source_images)]
-
         class_generations = []
         for i in range(num_generations):
-            source_image = random.choice(source_images)
+            source_image = random.choice(reference_images[class_id])
             generated_image = _generate_image(source_image)
             if transforms is not None:
                 generated_image = transforms(generated_image)
@@ -206,27 +204,56 @@ def get_class_generations(net, datasets, num_source_images, num_generations, sam
 
     return generated_images
 
-
+def split_datasets(datasets, num_reference, eval_size=-1, seed=None):
+    if seed is not None:
+        rng=torch.Generator()
+        rng.manual_seed(seed)
+    ref_datasets = []
+    eval_datasets = []
+    for dataset in tqdm(datasets):
+        #ref_inds = random.sample(range(len(dataset)), num_reference)
+        indices = torch.randperm(len(dataset), generator=rng)
+        ref_inds = indices[:num_reference]
+        eval_inds = indices[num_reference:num_reference+eval_size] if eval_size > 0 else indices[num_reference:]
+        ref_datasets.append(torch.stack([dataset[i] for i in ref_inds], dim=0))
+        eval_datasets.append(torch.stack([dataset[i] for i in eval_inds], dim=0))
+    return ref_datasets, eval_datasets
     
-def evaluate_scores(dataset, generator, reference_size, candidate_size, metrics=('fid', 'lpips'), device=torch.device("cuda"), num_images=-1, 
-        image_size=-1): 
+def evaluate_scores(generator, ref_datasets, eval_datasets, num_images, sampler, metrics=('fid', 'lpips'), device=torch.device("cuda"), 
+        image_size=-1, seed=None, **kwargs): 
     scores = {}
 
     transforms = [Lambda(clamp)]
     if image_size > 0:
-        transforms.append(Resize(image_size))
+        transforms.append(Resize((image_size, image_size)))
     transforms = Compose(transforms)
     
-    all_class_generations = get_class_generations(dataset, generator, num_images, reference_size, candidate_size, device, transforms=transforms)
-    datasets = [transforms(dataset_to_tensor(dataset_i)) for dataset_i in dataset.datasets]
+    #ref_datasets, eval_datasets = split_datasets(dataset, reference_size)
+    
+    all_class_generations = get_class_generations(generator, ref_datasets, num_images, sampler, transforms=transforms, seed=seed)
+    datasets = [transforms(dataset_to_tensor(dataset_i)) for dataset_i in eval_datasets]
 
     for metric in metrics:
         metric_fct = METRICS[metric](device=device)
 
-        scores[metric] = metric_fct(all_class_generations, datasets)
+        scores[metric] = metric_fct(all_class_generations, datasets, **kwargs)
     
     return scores
 
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('--checkpoint_path', type=str)
+    parser.add_argument('--output_path', type=str)
+    parser.add_argument('--n_distribution_path', type=str)
+    parser.add_argument('--n_images', type=int, default=128)
+    parser.add_argument('--n_ref', type=int, default=30)
+    parser.add_argument('--image_size', type=int, default=128)
+
+    parser.add_argument('--alpha', type=float, default=1)
+    parser.add_argument('--beta', type=float, default=0.005)
+
+    return parser.parse_args()
 
 
 if __name__=='__main__':
@@ -234,11 +261,13 @@ if __name__=='__main__':
     random.seed(SEED)
     np.random.seed(SEED)
 
+    args = parse_args()
+
     #load model
-    test_opts = TestOptions().parse()
-    ckpt = torch.load(test_opts.checkpoint_path, map_location='cpu')
+    #test_opts = TestOptions().parse()
+    ckpt = torch.load(args.checkpoint_path, map_location='cpu')
     opts = ckpt['opts']
-    opts.update(vars(test_opts))
+    opts.update(vars(args))
     if 'learn_in_w' not in opts:
         opts['learn_in_w'] = False
     if 'output_size' not in opts:
@@ -264,16 +293,18 @@ if __name__=='__main__':
     sampler = Sampler(dist, opts)
 
 
-    train_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['train_source_root'], opts=opts, transforms=transform)
+    #train_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['train_source_root'], opts=opts, transforms=transform)
     test_datasets = ImagesDataset.from_folder_by_category(source_root=dataset_args['test_source_root'], opts=opts, transforms=transform)
     
     time = datetime.datetime.now()
     outname = opts.name + ".txt" if len(opts.name) > 0 else "%d_%d_%d%d.txt" % (time.month, time.day, time.hour, time.minute)
-    outfile = os.path.join(test_opts.output_path, outname)
+    outfile = os.path.join(args.output_path, outname)
 
-    evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
+    #evaluate_scores = evaluate_scores_by_class if not opts.combine_fid else evaluate_scores_all
+    num_reference=30
+    ref_datasets, eval_datasets = split_datasets(test_datasets, num_reference, seed=0)
 
-    test_scores = evaluate_scores(test_datasets, net, opts.kshot, sampler, num_images=opts.n_images)
+    test_scores = evaluate_scores(net, ref_datasets, eval_datasets, 128, sampler)
 
     with open(outfile, 'w') as writer:
         writer.write("Test:\n")

@@ -14,12 +14,9 @@ export CUDA_HOME="/pkgs/cuda-11.7/"
 
 name=$1
 dataset=$2
-output_size=$3
-num_images=$4
-kshot=$5
-renorm=$6
-resize_outputs=$7
-ndist_suffix=$8
+n_ref=$3
+image_size=$4
+ndist_suffix=$5
 
 run_name="${dataset}-pretrained"
 pretrained_model_dir="pretrained_models"
@@ -27,35 +24,18 @@ pretrained_model_dir="pretrained_models"
 psp_checkpoint_path="${pretrained_model_dir}/psp_${dataset}.pt"
 age_checkpoint_path="${pretrained_model_dir}/age_${dataset}.pt"
 
-class_embedding_path="class_embeds/${run_name}/class_embeddings${ndist_suffix}.pt"
 n_distribution_path="n_distribution/${run_name}/n_distribution${ndist_suffix}.npy"
 
-dataset_path="../setgan2/datasets/animal_faces"
+#dataset_path="../setgan2/datasets/animal_faces"
 
 argstring="--name=$name \
 --output_path=eval \
 --checkpoint_path=$age_checkpoint_path \
---test_data_path=$dataset_path/test \
---train_data_path=data/$dataset_path/train \
---dataset_type=${dataset}_encode \
---class_embedding_path=$class_embedding_path \
 --n_distribution_path=$n_distribution_path \
---test_batch_size=4 \
---test_workers=4 \
---n_images=$num_images \
+--n_images=128 \
+--n_ref=$n_ref \
 --alpha=1 \
---beta=0.005 \
---output_size=$output_size \
---kshot=$kshot \
---combine_fid"
+--beta=0.005"
 
-if [ $renorm -eq 1 ]
-then
-    argstring="$argstring --renorm"
-fi
-if [ $resize_outputs -eq 1 ]
-then
-    argstring="$argstring --resize_outputs"
-fi
 
 python3 tools/get_scores.py $argstring
