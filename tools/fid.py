@@ -230,11 +230,11 @@ if __name__=='__main__':
             with torch.no_grad():
                 res0 = net.decode(codes, randomize_noise=False, resize=True)
             res0 = tensor2im(transform2(res0[0]))
-            im_save_path = os.path.join(args.fake_dir, "image_%d_%d.jpg" % (i, j))
+            im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j))
             Image.fromarray(np.array(res0)).save(im_save_path)
 
         for j, image in enumerate(fid_images):
-            im_save_path = os.path.join(args.real_dir, "image_%d_%d.jpg" % (i, j))
+            im_save_path = os.path.join(args.real_dir, "%d_%d.jpg" % (i, j))
             image = transform2(image)
             image.save(im_save_path)
 
