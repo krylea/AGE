@@ -225,10 +225,9 @@ if __name__=='__main__':
     os.makedirs(args.real_dir, exist_ok=True)
     os.makedirs(args.fake_dir, exist_ok=True)
     datasets = ImagesDataset.from_folder_by_category(test_data_path, opts, transforms=None)
-    n_cond = 30
     for i, class_dataset in tqdm(enumerate(datasets)):
         all_class_images = [x for x in class_dataset]
-        cond_images, fid_images = all_class_images[:n_cond], all_class_images[n_cond:]
+        cond_images, fid_images = all_class_images[:args.n_ref], all_class_images[args.n_ref:]
         for j in range(args.n_images):
             from_im = transform(random.choice(cond_images))
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
