@@ -2,6 +2,8 @@ import torch
 import os
 from argparse import Namespace, ArgumentParser
 
+import torchvision.transforms as transforms
+
 from tqdm import tqdm
 import numpy as np
 from PIL import Image
@@ -163,9 +165,9 @@ if __name__=='__main__':
     net = AGE(opts)
     net.eval()
     net.cuda()
-    dataset_args = data_configs.DATASETS[opts.dataset_type]
-    transforms_dict = dataset_args['transforms'](opts).get_transforms()
-    transform=transforms_dict['transform_inference']
+    transform_list = [ transforms.ToTensor(), transforms.Resize((256, 256)),
+                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    transform = transforms.Compose(transform_list)
 
 
     # get n distribution (only needs to be executed once)
