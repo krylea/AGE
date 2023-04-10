@@ -1,6 +1,6 @@
 import torch
 import os
-from argparse import Namespace
+from argparse import Namespace, ArgumentParser
 
 from tqdm import tqdm
 import numpy as np
@@ -129,16 +129,32 @@ def fid(real, fake, gpu):
     os.system(command)
 
 
+parser = ArgumentParser()
+parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
+parser.add_argument('--dataset', type=str, default="animalfaces")
+parser.add_argument('--real_dir', type=str, default="results/flower_wavegan_base_index/reals")
+parser.add_argument('--fake_dir', type=str,default="results/flower_wavegan_base_index/tests")
+parser.add_argument('--test_data_path', type=str)
+parser.add_argument('--n_sample_test', type=int, default=1)
+parser.add_argument('--checkpoint_path', type=str)
+parser.add_argument('--n_distribution_path', type=str)
+parser.add_argument('--alpha', type=float, default=1)
+parser.add_argument('--beta', type=float, default=0.005)
+parser.add_argument('--n_images', type=int, default=128)
+parser.add_argument('--n_ref', type=int, default=30)
+parser.add_argument('--resize_outputs', type=int, default=30)
+args = parser.parse_args()
+
 if __name__=='__main__':
     SEED = 0
     random.seed(SEED)
     np.random.seed(SEED)
 
     #load model
-    test_opts = TestOptions().parse()
-    ckpt = torch.load(test_opts.checkpoint_path, map_location='cpu')
+    #test_opts = TestOptions().parse()
+    ckpt = torch.load(args.checkpoint_path, map_location='cpu')
     opts = ckpt['opts']
-    opts.update(vars(test_opts))
+    opts.update(vars(args))
     if 'learn_in_w' not in opts:
         opts['learn_in_w'] = False
     if 'output_size' not in opts:
@@ -154,37 +170,37 @@ if __name__=='__main__':
 
     # get n distribution (only needs to be executed once)
     if not os.path.exists(os.path.join(opts.n_distribution_path, 'n_distribution.npy')):
-        class_embeddings=torch.load(os.path.join(test_opts.class_embedding_path, 'class_embeddings.pt'))
-        get_n_distribution(net, transform, class_embeddings, test_opts)
+        class_embeddings=torch.load(os.path.join(args.class_embedding_path, 'class_embeddings.pt'))
+        get_n_distribution(net, transform, class_embeddings, args)
 
 
     dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
-    test_data_path=test_opts.test_data_path
-    output_path_real=os.path.join(test_opts.output_path, "real")
-    output_path_fake=os.path.join(test_opts.output_path, "fake")
-    os.makedirs(output_path_real, exist_ok=True)
-    os.makedirs(output_path_fake, exist_ok=True)
+    test_data_path=args.test_data_path
+    #output_path_real=os.path.join(args.output_path, "real")
+    #output_path_fake=os.path.join(test_opts.output_path, "fake")
+    os.makedirs(args.real_dir, exist_ok=True)
+    os.makedirs(args.fake_dir, exist_ok=True)
     datasets = ImagesDataset.from_folder_by_category(test_data_path, opts, transforms=None)
     n_cond = 30
     for i, class_dataset in tqdm(enumerate(datasets)):
         all_class_images = [x for x in class_dataset]
         cond_images, fid_images = all_class_images[:n_cond], all_class_images[n_cond:]
-        for j in range(test_opts.n_images):
+        for j in range(args.n_images):
             from_im = transform(random.choice(cond_images))
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
-            codes=sampler(outputs, dist, test_opts)
+            codes=sampler(outputs, dist, opts)
             with torch.no_grad():
                 res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
             res0 = tensor2im(res0[0])
-            im_save_path = os.path.join(output_path_fake, "image_%d_%d.jpg" % (i, j))
+            im_save_path = os.path.join(args.fake_dir, "image_%d_%d.jpg" % (i, j))
             Image.fromarray(np.array(res0)).save(im_save_path)
 
         for j, image in enumerate(fid_images):
-            im_save_path = os.path.join(output_path_real, "image_%d_%d.jpg" % (i, j))
+            im_save_path = os.path.join(args.real_dir, "image_%d_%d.jpg" % (i, j))
             image.save(im_save_path)
 
     
-    fid(output_path_real, output_path_fake, 0)
+    fid(args.real_dir, args.fake_dir, 0)
 
 
 
