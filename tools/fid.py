@@ -167,6 +167,47 @@ def LPIPS(root):
     return np.mean(res)
 
 
+def eval(args, opts, net, dist, datasets):
+    transform_list = [ tf.ToTensor(), tf.Resize((256, 256)),
+                    tf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    transform = tf.Compose(transform_list)
+
+    transform2 = tf.Resize((args.image_size, args.image_size))
+
+    if os.path.exists(args.real_dir):
+        shutil.rmtree(args.real_dir)
+    if os.path.exists(args.fake_dir):
+        shutil.rmtree(args.fake_dir)
+
+    os.makedirs(args.real_dir, exist_ok=True)
+    os.makedirs(args.fake_dir, exist_ok=True)
+    
+    for i, class_dataset in tqdm(enumerate(datasets)):
+        all_class_images = [x for x in class_dataset]
+        ref_inds = random.sample(range(len(all_class_images)), args.n_ref)
+        cond_images = [all_class_images[idx] for idx in ref_inds]
+        fid_images = [all_class_images[idx] for idx in range(len(all_class_images)) if idx not in ref_inds]
+        for j in range(args.n_images):
+            from_im = transform(random.choice(cond_images))
+            outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
+            codes=sampler(outputs, dist, opts)
+            with torch.no_grad():
+                res0 = net.decode(codes, randomize_noise=args.randomize_noise, resize=args.resize_outputs)
+            res0 = tensor2im(transform2(res0[0]))
+            im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j))
+            Image.fromarray(np.array(res0)).save(im_save_path)
+
+        for j, image in enumerate(fid_images):
+            im_save_path = os.path.join(args.real_dir, "%d_%d.jpg" % (i, j))
+            image = transform2(image)
+            image.save(im_save_path)
+
+    fid_score = calculate_fid_given_paths((args.real_dir, args.fake_dir), 50, torch.device("cuda"), 2048).item()
+    lpips_score = LPIPS(args.fake_dir).item()
+
+    return fid_score, lpips_score
+
+
 parser = ArgumentParser()
 parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
 parser.add_argument('--dataset', type=str, default="animalfaces")
@@ -182,7 +223,8 @@ parser.add_argument('--beta', type=float, default=0.005)
 parser.add_argument('--n_images', type=int, default=128)
 parser.add_argument('--n_ref', type=int, default=30)
 parser.add_argument('--image_size', type=int, default=128)
-parser.add_argument('--cleanup', action='store_true')
+parser.add_argument('--n_exps', type=int, default=1)
+parser.add_argument('--randomize_noise', action='store_true')
 parser.add_argument('--resize_outputs', action='store_true')
 #parser.add_argument('--resize_outputs', type=int, default=30)
 args = parser.parse_args()
@@ -205,57 +247,22 @@ if __name__=='__main__':
     net = AGE(opts)
     net.eval()
     net.cuda()
-    transform_list = [ tf.ToTensor(), tf.Resize((256, 256)),
-                    tf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    transform = tf.Compose(transform_list)
 
-    transform2 = tf.Resize((args.image_size, args.image_size))
-
-
-    # get n distribution (only needs to be executed once)
-    if not os.path.exists(os.path.join(opts.n_distribution_path, 'n_distribution.npy')):
-        class_embeddings=torch.load(os.path.join(args.class_embedding_path, 'class_embeddings.pt'))
-        get_n_distribution(net, transform, class_embeddings, args)
-
+    datasets = ImagesDataset.from_folder_by_category(args.test_data_path, opts, transforms=None)
 
     dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
-    test_data_path=args.test_data_path
-    #output_path_real=os.path.join(args.output_path, "real")
-    #output_path_fake=os.path.join(test_opts.output_path, "fake")
-    os.makedirs(args.real_dir, exist_ok=True)
-    os.makedirs(args.fake_dir, exist_ok=True)
-    datasets = ImagesDataset.from_folder_by_category(test_data_path, opts, transforms=None)
-    for i, class_dataset in tqdm(enumerate(datasets)):
-        all_class_images = [x for x in class_dataset]
-        cond_images, fid_images = all_class_images[:args.n_ref], all_class_images[args.n_ref:]
-        for j in range(args.n_images):
-            from_im = transform(random.choice(cond_images))
-            outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
-            codes=sampler(outputs, dist, opts)
-            with torch.no_grad():
-                res0 = net.decode(codes, randomize_noise=False, resize=args.resize_outputs)
-            res0 = tensor2im(transform2(res0[0]))
-            im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j))
-            Image.fromarray(np.array(res0)).save(im_save_path)
 
-        for j, image in enumerate(fid_images):
-            im_save_path = os.path.join(args.real_dir, "%d_%d.jpg" % (i, j))
-            image = transform2(image)
-            image.save(im_save_path)
-
-    fid_score = calculate_fid_given_paths((args.real_dir, args.fake_dir), 50, torch.device("cuda"), 2048).item()
-    lpips_score = LPIPS(args.fake_dir).item()
+    fid_scores = []
+    lpips_scores=[]
+    for i in range(args.n_exps):
+        fid_score, lpips_score = eval(args, opts, net, dist, datasets)
+        fid_scores.append(fid_score)
+        lpips_scores.append(lpips_score)
+    fid_out = sum(fid_scores) / len(fid_scores)
+    lpips_out = sum(lpips_scores) / len(lpips_scores)
 
     with open(args.eval_path, 'a') as writer:
-        writer.write("%s:\tFID: %f\tLPIPS:%f\n" % (args.name, fid_score, lpips_score)) 
-
-    if args.cleanup:
-        shutil.rmtree(args.real_dir)
-        shutil.rmtree(args.fake_dir)
-    
-    #fid(args.real_dir, args.fake_dir, 0)
-    #LPIPS(args.fake_dir)
-
+        writer.write("%s:\tFID: %f\tLPIPS:%f\n" % (args.name, fid_out, lpips_out))
 
 
 

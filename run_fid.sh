@@ -13,8 +13,8 @@ dataset=$1
 name=$2
 n_ref=$3
 image_size=$4
-resize_outputs=${5:-1}
-cleanup=${6:-0}
+n_exps=$5
+resize_outputs=${6:-1}
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -38,16 +38,17 @@ argstring="--name=$name \
 --beta=0.005 \
 --n_images=128 \
 --n_ref=$n_ref \
---image_size=$image_size"
+--image_size=$image_size \
+--n_exps=$n_exps"
 
 if [ $resize_outputs -eq 1 ]
 then
     argstring="${argstring} --resize_outputs"
 fi
-if [ $cleanup -eq 1 ]
-then
-    argstring="${argstring} --cleanup"
-fi
+#if [ $cleanup -eq 1 ]
+#then
+#    argstring="${argstring} --cleanup"
+#fi
 
 
 python tools/fid.py $argstring
