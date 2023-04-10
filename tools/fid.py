@@ -11,6 +11,9 @@ import torch
 import sys
 import random
 
+import lpips
+import cv2
+
 sys.path.append(".")
 sys.path.append("..")
 
