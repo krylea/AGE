@@ -10,6 +10,7 @@
 #SBATCH --exclude=gpu109
 
 dataset=$1
+name=$2
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -19,7 +20,7 @@ age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 train_data_path="../setgan2/datasets/${dataset}/train_all"
 test_data_path="../setgan2/datasets/${dataset}/test"
 
-output_path="outputs/${dataset}_pretrained"
+output_path="outputs/${name}"
 
 python tools/fid.py \
 --dataset_type="${dataset}_encode" \

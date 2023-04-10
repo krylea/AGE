@@ -124,7 +124,7 @@ def fid(real, fake, gpu):
     print('Calculating FID...')
     print('real dir: {}'.format(real))
     print('fake dir: {}'.format(fake))
-    command = 'python -m pytorch_fid {} {} --gpu {}'.format(real, fake, gpu)
+    command = 'python -m pytorch_fid {} {} --device cuda:{}'.format(real, fake, gpu)
     #command = 'python -m pytorch_fid {} {}'.format(real, fake)
     os.system(command)
 
@@ -184,7 +184,7 @@ if __name__=='__main__':
             image.save(im_save_path)
 
     
-    print(fid(output_path_real, output_path_fake, 0))
+    fid(output_path_real, output_path_fake, 0)
 
 
 

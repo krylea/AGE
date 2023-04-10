@@ -152,6 +152,7 @@ if __name__ == '__main__':
         data = data[1802:]
         num = 30
 
+    #num=30
     data_for_gen = data[:, :num, :, :, :]
     data_for_fid = data[:, num:, :, :, :]
 
