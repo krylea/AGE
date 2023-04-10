@@ -142,7 +142,7 @@ parser.add_argument('--alpha', type=float, default=1)
 parser.add_argument('--beta', type=float, default=0.005)
 parser.add_argument('--n_images', type=int, default=128)
 parser.add_argument('--n_ref', type=int, default=30)
-parser.add_argument('--resize_outputs', type=int, default=30)
+#parser.add_argument('--resize_outputs', type=int, default=30)
 args = parser.parse_args()
 
 if __name__=='__main__':
@@ -190,7 +190,7 @@ if __name__=='__main__':
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
             codes=sampler(outputs, dist, opts)
             with torch.no_grad():
-                res0 = net.decode(codes, randomize_noise=False, resize=opts.resize_outputs)
+                res0 = net.decode(codes, randomize_noise=False, resize=True)
             res0 = tensor2im(res0[0])
             im_save_path = os.path.join(args.fake_dir, "image_%d_%d.jpg" % (i, j))
             Image.fromarray(np.array(res0)).save(im_save_path)
