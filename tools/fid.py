@@ -10,6 +10,7 @@ from PIL import Image
 import torch
 import sys
 import random
+import shutil
 
 import lpips
 import cv2
@@ -23,6 +24,8 @@ from options.test_options import TestOptions
 from models.age import AGE
 
 from torch.utils.data import Dataset
+
+from pytorch_fid import calculate_fid_given_paths
 
 
 IMG_EXTENSIONS = [
@@ -161,12 +164,13 @@ def LPIPS(root):
                 d = model(img1, img2, normalize=True)
                 temp.append(d.detach().cpu().numpy())
         res.append(np.mean(temp))
-    print(np.mean(res))
+    return np.mean(res)
 
 
 parser = ArgumentParser()
 parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
 parser.add_argument('--dataset', type=str, default="animalfaces")
+parser.add_argument('--eval_path', type=str, default="eval_results.txt")
 parser.add_argument('--real_dir', type=str, default="results/flower_wavegan_base_index/reals")
 parser.add_argument('--fake_dir', type=str,default="results/flower_wavegan_base_index/tests")
 parser.add_argument('--test_data_path', type=str)
@@ -178,6 +182,8 @@ parser.add_argument('--beta', type=float, default=0.005)
 parser.add_argument('--n_images', type=int, default=128)
 parser.add_argument('--n_ref', type=int, default=30)
 parser.add_argument('--image_size', type=int, default=128)
+parser.add_argument('--cleanup', action='store_true')
+parser.add_argument('--resize_outputs', action='store_true')
 #parser.add_argument('--resize_outputs', type=int, default=30)
 args = parser.parse_args()
 
@@ -228,7 +234,7 @@ if __name__=='__main__':
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
             codes=sampler(outputs, dist, opts)
             with torch.no_grad():
-                res0 = net.decode(codes, randomize_noise=False, resize=True)
+                res0 = net.decode(codes, randomize_noise=False, resize=args.resize_outputs)
             res0 = tensor2im(transform2(res0[0]))
             im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j))
             Image.fromarray(np.array(res0)).save(im_save_path)
@@ -238,9 +244,18 @@ if __name__=='__main__':
             image = transform2(image)
             image.save(im_save_path)
 
+    fid_score = calculate_fid_given_paths((args.real_dir, args.fake_dir), 50, torch.device("cuda"), 2048).item()
+    lpips_score = LPIPS(args.fake_dir).item()
+
+    with open(args.eval_path, 'a') as writer:
+        writer.write("%s:\tFID: %f\tLPIPS:%f\n" % (args.name, fid_score, lpips_score)) 
+
+    if args.cleanup:
+        shutil.rmtree(args.real_dir)
+        shutil.rmtree(args.fake_dir)
     
-    fid(args.real_dir, args.fake_dir, 0)
-    LPIPS(args.fake_dir)
+    #fid(args.real_dir, args.fake_dir, 0)
+    #LPIPS(args.fake_dir)
 
 
 
