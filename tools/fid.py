@@ -25,7 +25,7 @@ from models.age import AGE
 
 from torch.utils.data import Dataset
 
-from pytorch_fid import calculate_fid_given_paths
+from pytorch_fid.fid_score import calculate_fid_given_paths
 
 
 IMG_EXTENSIONS = [
