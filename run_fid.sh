@@ -24,7 +24,7 @@ test_data_path="../setgan2/datasets/${dataset}/test"
 real_dir="outputs/${name}_real"
 fake_dir="outputs/${name}_fake"
 
-python tools/fid_from_npy.py \
+python tools/fid.py \
 --n_distribution_path=$n_distribution_path \
 --checkpoint_path=$age_checkpoint_path \
 --real_dir=$real_dir \
