@@ -12,6 +12,7 @@
 dataset=$1
 name=$2
 n_ref=$3
+image_size=$4
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -34,4 +35,5 @@ python tools/fid.py \
 --alpha=1 \
 --beta=0.005 \
 --n_images=128 \
---n_ref=$n_ref
+--n_ref=$n_ref \
+--image_size=$image_size
