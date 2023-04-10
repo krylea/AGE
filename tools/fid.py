@@ -2,7 +2,7 @@ import torch
 import os
 from argparse import Namespace, ArgumentParser
 
-import torchvision.transforms as transforms
+import torchvision.transforms as tf
 
 from tqdm import tqdm
 import numpy as np
@@ -165,8 +165,8 @@ if __name__=='__main__':
     net = AGE(opts)
     net.eval()
     net.cuda()
-    transform_list = [ transforms.ToTensor(), transforms.Resize((256, 256)),
-                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    transform_list = [ tf.ToTensor(), tf.Resize((256, 256)),
+                    tf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     transform = transforms.Compose(transform_list)
 
 
