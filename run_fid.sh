@@ -15,7 +15,7 @@ n_ref=$3
 image_size=$4
 n_exps=$5
 resize_outputs=${6:-1}
-randomize_noise=${6:-0}
+randomize_noise=${7:-0}
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
