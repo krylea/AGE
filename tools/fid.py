@@ -167,7 +167,7 @@ if __name__=='__main__':
     net.cuda()
     transform_list = [ tf.ToTensor(), tf.Resize((256, 256)),
                     tf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    transform = transforms.Compose(transform_list)
+    transform = tf.Compose(transform_list)
 
 
     # get n distribution (only needs to be executed once)
