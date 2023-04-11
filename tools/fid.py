@@ -184,9 +184,11 @@ def eval(args, opts, net, dist, datasets):
     
     for i, class_dataset in tqdm(enumerate(datasets)):
         all_class_images = [x for x in class_dataset]
-        ref_inds = random.sample(range(len(all_class_images)), args.n_ref)
+        indices = np.random.permutation(len(all_class_images))
+        ref_inds = indices[:args.n_ref]
+        fid_inds = indices[args.n_ref:args.n_ref+args.n_eval] if args.n_eval > 0 else indices[args.n_ref:]
         cond_images = [all_class_images[idx] for idx in ref_inds]
-        fid_images = [all_class_images[idx] for idx in range(len(all_class_images)) if idx not in ref_inds]
+        fid_images = [all_class_images[idx] for idx in fid_inds]
         for j in range(args.n_images):
             from_im = transform(random.choice(cond_images))
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
@@ -221,6 +223,7 @@ parser.add_argument('--n_distribution_path', type=str)
 parser.add_argument('--alpha', type=float, default=1)
 parser.add_argument('--beta', type=float, default=0.005)
 parser.add_argument('--n_images', type=int, default=128)
+parser.add_argument('--n_eval', type=int, default=-1)
 parser.add_argument('--n_ref', type=int, default=30)
 parser.add_argument('--image_size', type=int, default=128)
 parser.add_argument('--n_exps', type=int, default=1)

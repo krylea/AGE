@@ -14,8 +14,9 @@ name=$2
 n_ref=$3
 image_size=$4
 n_exps=$5
-resize_outputs=${6:-1}
-randomize_noise=${7:-0}
+n_eval=${6:--1}
+resize_outputs=${7:-1}
+randomize_noise=${8:-0}
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -40,7 +41,8 @@ argstring="--name=$name \
 --n_images=128 \
 --n_ref=$n_ref \
 --image_size=$image_size \
---n_exps=$n_exps"
+--n_exps=$n_exps \
+--n_eval=$n_eval"
 
 if [ $resize_outputs -eq 1 ]
 then
