@@ -159,9 +159,10 @@ if __name__ == '__main__':
 
     if not os.path.exists(real_dir):
         os.makedirs(real_dir, exist_ok=True)
+        
         for cls in tqdm(range(data_for_fid.shape[0]), desc='preparing real images'):
-            for i in range(data_for_fid.shape[1]):
-                idx = i
+            for i in range(128):
+                idx = np.random.choice(data_for_fid.shape[1], 1)
                 real_img = data_for_fid[cls, idx, :, :, :]
                 if args.dataset == 'vggface':
                     real_img *= 255
