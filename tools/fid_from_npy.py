@@ -163,7 +163,7 @@ if __name__ == '__main__':
         for cls in tqdm(range(data_for_fid.shape[0]), desc='preparing real images'):
             for i in range(128):
                 idx = np.random.choice(data_for_fid.shape[1], 1)
-                real_img = data_for_fid[cls, idx, :, :, :]
+                real_img = data_for_fid[cls, idx, :, :, :][0]
                 if args.dataset == 'vggface':
                     real_img *= 255
                 real_img = Image.fromarray(np.uint8(real_img))
