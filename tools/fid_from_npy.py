@@ -106,10 +106,11 @@ parser.add_argument('--n_images', type=int, default=128)
 args = parser.parse_args()
 
 
-transform_list = [ transforms.ToTensor(), transforms.Resize((256, 256)),
+transform_list = [ transforms.ToTensor(), #transforms.Resize((256, 256)),
                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 transform = transforms.Compose(transform_list)
 
+transform2 = transforms.Resize((128,128))
 
 if __name__ == '__main__':
     SEED = 0
@@ -178,7 +179,7 @@ if __name__ == '__main__':
                 codes=sampler(outputs, dist, opts)
                 with torch.no_grad():
                     res0 = net.decode(codes, randomize_noise=False, resize=True)
-                res0 = tensor2im(res0[0])
+                res0 = tensor2im(transform2(res0[0]))
                 im_save_path = os.path.join(fake_dir, "image_%d_%d.jpg" % (cls, i))
                 Image.fromarray(np.array(res0)).save(im_save_path)
 
