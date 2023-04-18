@@ -253,6 +253,7 @@ if __name__=='__main__':
     if 'output_size' not in opts:
         opts['output_size'] = 1024
     opts = Namespace(**opts)
+    opts.A_length=100
     net = AGE(opts)
     net.eval()
     net.cuda()
