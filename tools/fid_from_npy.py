@@ -106,7 +106,7 @@ parser.add_argument('--n_images', type=int, default=128)
 args = parser.parse_args()
 
 
-transform_list = [ transforms.ToTensor(), #transforms.Resize((256, 256)),
+transform_list = [ transforms.ToTensor(), transforms.Resize((256, 256)),
                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 transform = transforms.Compose(transform_list)
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
                 if args.dataset == 'vggface':
                     real_img *= 255
                 real_img = Image.fromarray(np.uint8(real_img))
-                real_img.save(os.path.join(real_dir, '{}_{}.png'.format(cls, str(i).zfill(3))), 'png')
+                real_img.save(os.path.join(real_dir, '{}_{}_{}.png'.format(cls, str(i).zfill(3), idx.item())), 'png')
 
     if os.path.exists(fake_dir):
         dist=np.load(os.path.join(opts.n_distribution_path, 'n_distribution.npy'), allow_pickle=True).item()
@@ -181,7 +181,7 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     res0 = net.decode(codes, randomize_noise=False, resize=True)
                 res0 = tensor2im(transform2(res0[0]))
-                im_save_path = os.path.join(fake_dir, "image_%d_%d.jpg" % (cls, i))
+                im_save_path = os.path.join(fake_dir, "image_%d_%d_%d.jpg" % (cls, i, idx.item()))
                 Image.fromarray(np.array(res0)).save(im_save_path)
 
     fid(real_dir, fake_dir)
