@@ -199,7 +199,7 @@ def eval(args, opts, net, dist, datasets):
             with torch.no_grad():
                 res0 = net.decode(codes, randomize_noise=args.randomize_noise, resize=args.resize_outputs)
             res0 = tensor2im(transform2(res0[0]))
-            im_save_path = os.path.join(args.fake_dir, "%d_%d_%d.jpg" % (i, j, idx))
+            im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j, idx))
             Image.fromarray(np.array(res0)).save(im_save_path)
 
         
