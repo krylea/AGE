@@ -185,3 +185,19 @@ if __name__ == '__main__':
                 Image.fromarray(np.array(res0)).save(im_save_path)
 
     fid(real_dir, fake_dir)
+
+
+import numpy as np
+from PIL import Image
+import os
+from tqdm import tqdm
+
+data = np.load("../animal_128.npy")
+data = data[119:]
+os.makedirs("animalfaces_npy")
+
+for cls in tqdm(range(data.shape[0]), desc='preparing real images'):
+    for i in range(data.shape[1]):
+        real_img = data[cls, i, :, :, :]
+        real_img = Image.fromarray(np.uint8(real_img))
+        real_img.save(os.path.join("animalfaces_npy", '{}_{}.png'.format(cls, str(i).zfill(3))), 'png')

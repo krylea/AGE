@@ -190,13 +190,14 @@ def eval(args, opts, net, dist, datasets):
         cond_images = [all_class_images[idx] for idx in ref_inds]
         fid_images = [all_class_images[idx] for idx in fid_inds]
         for j in range(args.n_images):
-            from_im = transform(random.choice(cond_images))
+            idx = random.choice(range(len(cond_images)))
+            from_im = transform(cond_images[idx])
             outputs = net.get_test_code(from_im.unsqueeze(0).to("cuda").float())
             codes=sampler(outputs, dist, opts)
             with torch.no_grad():
                 res0 = net.decode(codes, randomize_noise=args.randomize_noise, resize=args.resize_outputs)
             res0 = tensor2im(transform2(res0[0]))
-            im_save_path = os.path.join(args.fake_dir, "%d_%d.jpg" % (i, j))
+            im_save_path = os.path.join(args.fake_dir, "%d_%d_%d.jpg" % (i, j, idx))
             Image.fromarray(np.array(res0)).save(im_save_path)
 
         for j, image in enumerate(fid_images):
