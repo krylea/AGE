@@ -3,6 +3,6 @@ dataset_paths = {
 	'af_valid': '../setgan2/datasets/animalfaces/test',
 	'fl_train': '../setgan2/datasets/flowers/train',
 	'fl_valid': '../setgan2/datasets/flowers/test',
-    'vf_train': '../setgan2/datasets/vggface/train_all',
+    'vf_train': '../setgan2/datasets/vggface/train',
 	'vf_valid': '../setgan2/datasets/vggface/test',
 }

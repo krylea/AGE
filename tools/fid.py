@@ -168,9 +168,11 @@ def LPIPS(root):
 
 
 def eval(args, opts, net, dist, datasets):
-    transform_list = [ tf.ToTensor(), tf.Resize((256, 256)),
-                    tf.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    transform = tf.Compose(transform_list)
+    transform = tf.Compose([
+                    tf.Resize((256, 256)),
+                    tf.ToTensor(),
+                    tf.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+                ])
 
     transform2 = tf.Resize((args.image_size, args.image_size))
 
@@ -200,6 +202,7 @@ def eval(args, opts, net, dist, datasets):
             im_save_path = os.path.join(args.fake_dir, "%d_%d_%d.jpg" % (i, j, idx))
             Image.fromarray(np.array(res0)).save(im_save_path)
 
+        
         for j, image in enumerate(fid_images):
             im_save_path = os.path.join(args.real_dir, "%d_%d.jpg" % (i, j))
             image = transform2(image)
