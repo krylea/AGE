@@ -209,7 +209,9 @@ def eval(args, opts, net, dist, datasets):
             image.save(im_save_path)
 
     fid_score = calculate_fid_given_paths((args.real_dir, args.fake_dir), 50, torch.device("cuda"), 2048).item()
+    print("FID:", str(fid_score))
     lpips_score = LPIPS(args.fake_dir).item()
+    print("LPIPS:", str(lpips_score))
 
     return fid_score, lpips_score
 
