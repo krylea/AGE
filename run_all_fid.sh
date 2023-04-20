@@ -8,7 +8,7 @@ NEXP=3
 
 dataset=$1
 
-for nref in "{NREF[@]}"
+for nref in "${NREF[@]}"
 do
     sbatch run_fid.sh $dataset $dataset_$nref_$IMGSIZE_$NEVAL $nref $IMGSIZE $NEXP $NEVAL
 done
