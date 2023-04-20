@@ -274,7 +274,7 @@ if __name__=='__main__':
     with open(args.eval_path, 'a') as writer:
         fid_scores_str = ", ".join(["%.2f" % (x,) for x in fid_scores])
         lpips_scores_str = ", ".join(["%.2f" % (x,) for x in lpips_scores])
-        writer.write("%s:\tFID: %.2f (%s)\tLPIPS: %.2f (%s)\n" % (args.name, fid_out, fid_scores_str, lpips_out, lpips_scores_str)) 
+        writer.write("%s:\tFID: %.2f (%s)\tLPIPS: %.4f (%s)\n" % (args.name, fid_out, fid_scores_str, lpips_out, lpips_scores_str)) 
 
 
 

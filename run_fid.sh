@@ -23,8 +23,13 @@ n_distribution_path="n_distribution/${dataset}-pretrained"
 psp_checkpoint_path="pretrained_models/psp_${dataset}.pt"
 age_checkpoint_path="pretrained_models/age_${dataset}.pt"
 
-train_data_path="../setgan2/datasets/${dataset}/train_all"
+train_data_path="../setgan2/datasets/${dataset}/train"
 test_data_path="../setgan2/datasets/${dataset}/test"
+
+if [ $dataset = "animalfaces" ]
+then
+    train_data_path="../setgan2/datasets/${dataset}/train_all"
+fi
 
 real_dir="outputs/${name}_real"
 fake_dir="outputs/${name}_fake"
