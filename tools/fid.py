@@ -219,7 +219,7 @@ def eval(args, opts, net, dist, datasets):
 parser = ArgumentParser()
 parser.add_argument('--name', type=str,default="results/flower_wavegan_base_index")
 parser.add_argument('--dataset', type=str, default="animalfaces")
-parser.add_argument('--eval_path', type=str, default="eval_results2.txt")
+parser.add_argument('--eval_path', type=str, default="eval_results3.txt")
 parser.add_argument('--real_dir', type=str, default="results/flower_wavegan_base_index/reals")
 parser.add_argument('--fake_dir', type=str,default="results/flower_wavegan_base_index/tests")
 parser.add_argument('--test_data_path', type=str)
