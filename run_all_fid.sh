@@ -10,5 +10,5 @@ dataset=$1
 
 for nref in "${NREF[@]}"
 do
-    sbatch run_fid.sh $dataset $dataset_$nref_$IMGSIZE_$NEVAL $nref $IMGSIZE $NEXP $NEVAL
+    sbatch run_fid.sh $dataset "${dataset}_${nref}_${IMGSIZE}_${NEVAL}" $nref $IMGSIZE $NEXP $NEVAL
 done
