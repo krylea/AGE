@@ -188,7 +188,14 @@ def eval(args, opts, net, dist, datasets):
         all_class_images = [x for x in class_dataset]
         indices = np.random.permutation(len(all_class_images))
         ref_inds = indices[:args.n_ref]
-        fid_inds = indices[args.n_ref:args.n_ref+args.n_eval] if args.n_eval > 0 else indices[args.n_ref:]
+        if args.n_eval > 0:
+            fid_inds = indices[args.n_ref:args.n_ref+args.n_eval] 
+            if fid_inds.shape[0] < args.n_eval:
+                fid_inds = fid_inds[np.random.choice(fid_inds.shape[0], args.n_eval)]
+                #fid_inds = fid_inds[torch.multinomial(torch.ones(fid_inds.size(0)), args.n_eval, replacement=True)]
+        else:
+            fid_inds = indices[args.n_ref:]
+        #fid_inds = indices[args.n_ref:args.n_ref+args.n_eval] if args.n_eval > 0 else indices[args.n_ref:]
         cond_images = [all_class_images[idx] for idx in ref_inds]
         fid_images = [all_class_images[idx] for idx in fid_inds]
         for j in range(args.n_images):
