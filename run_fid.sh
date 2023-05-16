@@ -14,9 +14,10 @@ name=$2
 n_ref=$3
 image_size=$4
 n_exps=$5
-n_eval=${6:--1}
-resize_outputs=${7:-1}
-randomize_noise=${8:-0}
+n_eval=$6
+sample_eval=${7:-1}
+resize_outputs=${8:-1}
+randomize_noise=${9:-0}
 
 class_embedding_path="class_embeds/${dataset}-pretrained"
 n_distribution_path="n_distribution/${dataset}-pretrained"
@@ -56,6 +57,10 @@ fi
 if [ $randomize_noise -eq 1 ]
 then
     argstring="${argstring} --randomize_noise"
+fi
+if [ $sample_eval -eq 1 ]
+then
+    argstring="${argstring} --sample_eval"
 fi
 #if [ $cleanup -eq 1 ]
 #then

@@ -190,7 +190,7 @@ def eval(args, opts, net, dist, datasets):
         ref_inds = indices[:args.n_ref]
         if args.n_eval > 0:
             fid_inds = indices[args.n_ref:args.n_ref+args.n_eval] 
-            if fid_inds.shape[0] < args.n_eval:
+            if fid_inds.shape[0] < args.n_eval and args.sample_eval:
                 fid_inds = fid_inds[np.random.choice(fid_inds.shape[0], args.n_eval)]
                 #fid_inds = fid_inds[torch.multinomial(torch.ones(fid_inds.size(0)), args.n_eval, replacement=True)]
         else:
@@ -242,6 +242,7 @@ parser.add_argument('--image_size', type=int, default=128)
 parser.add_argument('--n_exps', type=int, default=1)
 parser.add_argument('--randomize_noise', action='store_true')
 parser.add_argument('--resize_outputs', action='store_true')
+parser.add_argument('--sample_eval', action='store_true')
 #parser.add_argument('--resize_outputs', type=int, default=30)
 args = parser.parse_args()
 

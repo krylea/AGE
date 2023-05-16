@@ -7,7 +7,7 @@ import pprint
 import json
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 import torch
 import torch.nn as nn

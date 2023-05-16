@@ -7,8 +7,9 @@ NIMG=128
 NEXP=3
 
 dataset=$1
+sample_eval=${2:-1}
 
 for nref in "${NREF[@]}"
 do
-    sbatch run_fid.sh $dataset "${dataset}_${nref}_${IMGSIZE}_${NEVAL}" $nref $IMGSIZE $NEXP $NEVAL
+    sbatch run_fid.sh $dataset "${dataset}_${nref}_${IMGSIZE}_${NEVAL}" $nref $IMGSIZE $NEXP $NEVAL $sample_Eval
 doned

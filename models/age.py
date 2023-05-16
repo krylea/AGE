@@ -2,7 +2,7 @@
 This file defines the core research contribution
 """
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import math
 
 import torch
