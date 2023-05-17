@@ -276,17 +276,12 @@ if __name__=='__main__':
         fid_score, lpips_score = eval(args, opts, net, dist, datasets)
         fid_scores.append(fid_score)
         lpips_scores.append(lpips_score)
-    fid_out = sum(fid_scores) / len(fid_scores)
-    lpips_out = sum(lpips_scores) / len(lpips_scores)
+    fid_scores, lpips_scores = torch.Tensor(fid_scores), torch.Tensor(lpips_scores)
+    fid_mean, fid_stdev = fid_scores.mean().item(), fid_scores.std().item()
+    lpips_mean, lpips_stdev = lpips_scores.mean().item(), lpips_scores.std().item()
 
     with open(args.eval_path, 'a') as writer:
-        fid_scores_str = ", ".join(["%.2f" % (x,) for x in fid_scores])
-        lpips_scores_str = ", ".join(["%.2f" % (x,) for x in lpips_scores])
-        writer.write("%s:\tFID: %.2f (%s)\tLPIPS: %.4f (%s)\n" % (args.name, fid_out, fid_scores_str, lpips_out, lpips_scores_str)) 
+        fid_scores_str = ", ".join(["%.2f" % (x.item(),) for x in fid_scores])
+        lpips_scores_str = ", ".join(["%.4f" % (x.item(),) for x in lpips_scores])
+        writer.write("%s:\tFID: %.2f +/- %.2f (%s)\tLPIPS: %.4f +/- %.4f (%s)\n" % (args.name, fid_mean, fid_stdev, fid_scores_str, lpips_mean, lpips_stdev, lpips_scores_str)) 
 
-
-
-
-
-
-    
